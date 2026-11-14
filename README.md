@@ -21,7 +21,7 @@ Platte 420 × 510 × 1 mm (PETG), Motivfeld 360 × 450 mm, kleinste Materialbrei
 
 ## Erzeugen
 
-Aus dem Projektordner, `MOTIV` ist `bb` (Standard) oder `maria`:
+Aus dem Projektordner, `MOTIV` ist `bb` (Standard), `maria` oder `carl`:
 
 ```sh
 export MOTIV=maria PYTHONPATH=src
@@ -35,9 +35,9 @@ Benötigt `opencv-python`, `numpy`, `shapely` ab 2.1, `reportlab` sowie `usdcat`
 
 | Pfad | Inhalt |
 |---|---|
-| `quelle/` | Ausgangsfotos (`Maria.png` ist privat und nicht im Repository) |
+| `quelle/` | Ausgangsfotos (`Maria.png` und `Carl2.JPG` sind privat und nicht im Repository) |
 | `src/motiv.py` | Motivauswahl, Dateipräfix und Texte |
-| `src/separation.py`, `src/separation_maria.py` | Tonwerttrennung je Motiv |
+| `src/separation.py`, `src/separation_maria.py`, `src/separation_carl.py` | Tonwerttrennung je Motiv |
 | `src/stencil_geom.py` | Stege, Vektorisierung, Platten |
 | `src/export.py` | USDZ, PDF, Spraybild |
 | `ausgabe/` | Ergebnisse |

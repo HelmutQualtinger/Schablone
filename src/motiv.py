@@ -1,4 +1,4 @@
-"""Motivauswahl über Umgebungsvariable MOTIV (bb oder maria)."""
+"""Motivauswahl über Umgebungsvariable MOTIV (bb, maria oder carl)."""
 import os
 
 NAME = os.environ.get("MOTIV", "bb")
@@ -7,6 +7,11 @@ if NAME == "maria":
     PREFIX, TITLE = "Maria", "Maria"
     PAPER_NOTE = "4. Die Figur liegt vollständig unter S1, es bleibt kein Papierton stehen. Hintergrund entsteht allein durch S3."
     CREDIT = "Vorlage: privates Foto (quelle/Maria.png), Namensetikett und Kopfhörerkabel retuschiert."
+elif NAME == "carl":
+    from separation_carl import separate, PX_MM, MOTIF_W, MOTIF_H
+    PREFIX, TITLE = "Carl", "Carl"
+    PAPER_NOTE = "4. Die Figur liegt vollständig unter S1, es bleibt kein Papierton stehen. Hintergrund entsteht allein durch S3."
+    CREDIT = "Vorlage: privates Foto (quelle/Carl2.JPG), Hintergrund automatisch freigestellt."
 else:
     from separation import separate, PX_MM, MOTIF_W, MOTIF_H
     PREFIX, TITLE = "BB", "Brigitte Bardot"
