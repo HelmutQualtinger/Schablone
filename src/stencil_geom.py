@@ -163,8 +163,10 @@ def fixtures(layer_no):
     return plate, holes, notches
 
 
-def build():
-    m, _ = separate()
+def build(m=None, progress=None):
+    """m: Masken aus einer Tonwerttrennung, sonst die des gewählten Motivs. progress(no) meldet die Platte."""
+    if m is None:
+        m, _ = separate()
     fig_black = clean(m["black"])
     o3 = clean(m["petrol"] | fig_black)
     fig = ~m["petrol"] | m["yellow"] | m["rose"]
@@ -175,11 +177,13 @@ def build():
 
     res = []
     for no, L in enumerate(LAYERS, 1):
+        if progress:
+            progress(no)
         o, n_bridges = route_bridges(raw[L["id"]], next_layer[L["id"]])
         opening = vectorize(o)
         plate, holes, notches = fixtures(no)
         solid = plate.difference(opening).difference(unary_union(holes + notches))
-        res.append(dict(L, no=no, mask=o, opening=opening, solid=solid, bridges=n_bridges,
+        res.append(dict(L, no=no, raw=raw[L["id"]], mask=o, opening=opening, solid=solid, bridges=n_bridges,
                         holes=holes, notches=notches))
     return res
 

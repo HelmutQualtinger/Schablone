@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eigenes Spraybild</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Saira+Stencil+One&display=swap" rel="stylesheet">
+<style>
+:root{--petrol:#0c5664;--petrol-tief:#094450;--papier:#f6f1e8;--gelb:#f5cb26;--rosa:#eb6e7a;--schwarz:#16181c}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--petrol);color:var(--papier);font:400 17px/1.45 Barlow,system-ui,sans-serif;
+  display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:32px;height:100dvh;padding:24px 32px 24px 24px;overflow:hidden}
+#buehne{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+canvas#stage{display:block;max-width:100%;max-height:100%;aspect-ratio:840/1020;height:100%;background:var(--papier)}
+canvas#stage.spruehen{cursor:crosshair;touch-action:none}
+aside{display:flex;flex-direction:column;min-height:0}
+h1{font:400 44px/1.02 "Saira Stencil One",Barlow,sans-serif;margin:0 0 4px;color:var(--gelb)}
+.unter{margin:0 0 16px;font-size:16px}
+ol{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin}
+li button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;
+  width:100%;padding:5px 6px;font-weight:500}
+li button:hover{background:var(--petrol-tief)}
+li.an button{color:var(--gelb);font-weight:600}
+li button:focus-visible,.knopf:focus-visible,input:focus-visible{outline:2px solid var(--gelb);outline-offset:1px}
+.platte{position:relative;width:30px;height:19px;background:var(--c,transparent);display:flex;gap:2px;justify-content:center;
+  border:1px solid rgba(246,241,232,.55)}
+.platte i{width:3px;height:4px;background:var(--n)}
+.nr{font-variant-numeric:tabular-nums;text-align:center}
+li p{margin:2px 6px 10px 46px;font-size:16px;display:none;max-width:60ch}
+li.an p{display:block}
+.werte{margin:8px 6px 0;min-height:26px;font-size:16px}
+.werte input{width:100%;accent-color:var(--gelb)}
+.werte label{display:block}
+.leiste{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.knopf{font:600 16px Barlow,sans-serif;border:0;padding:9px 16px;cursor:pointer;background:var(--papier);color:var(--schwarz)}
+.knopf.haupt{background:var(--gelb)}
+a.knopf{text-decoration:none;display:inline-block}
+.knopf[disabled]{opacity:.45;cursor:default}
+.wahl{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.wahl input{accent-color:var(--gelb);width:17px;height:17px}
+.quelle{font-size:14px;margin:12px 0 0;opacity:.85}
+#upload{display:flex;flex-direction:column;gap:12px}
+#ablauf{display:flex;flex-direction:column;flex:1;min-height:0}
+#ablauf[hidden],#upload[hidden]{display:none}
+.datei{display:block;border:2px dashed rgba(246,241,232,.55);padding:16px;cursor:pointer;text-align:center}
+.datei:hover,.datei.ueber{border-color:var(--gelb);background:var(--petrol-tief)}
+.datei:focus-within{outline:2px solid var(--gelb);outline-offset:1px}
+.datei input{position:absolute;opacity:0;width:1px;height:1px}
+fieldset{border:1px solid rgba(246,241,232,.35);margin:0;padding:8px 12px 10px}
+legend{padding:0 4px;font-size:15px}
+fieldset label{display:block;font-size:16px}
+fieldset input{width:100%;accent-color:var(--gelb)}
+fieldset output{float:right;font-variant-numeric:tabular-nums}
+.status{margin:0;min-height:24px;font-size:16px}
+.status.fehler{color:var(--gelb);font-weight:600}
+@media (max-width:900px){
+  body{display:block;height:auto;overflow:auto;padding:16px}
+  #buehne{display:block}
+  canvas#stage{width:100%;height:auto}
+  aside{margin-top:18px}
+  h1{font-size:36px}
+  ol{overflow:visible}
+}
+</style>
+</head>
+<body>
+<main id="buehne"><canvas id="stage" width="840" height="1020" role="img" aria-label="Werkbank von oben mit Foto, Schablone und Spraybild"></canvas></main>
+<aside>
+  <h1 id="titel">Eigenes Foto</h1>
+  <p class="unter">Vom Foto zum Vierfarb-Spraybild, 360 × 450 mm</p>
+  <form id="upload">
+    <label class="datei" id="ablage">
+      <input type="file" id="datei" accept="image/*">
+      <span id="dateiname">Foto wählen oder auf die Bühne ziehen</span>
+    </label>
+    <label class="wahl"><input type="checkbox" id="frei" checked> Hauptmotiv freistellen, Hintergrund petrol</label>
+    <fieldset>
+      <legend>Anteil der Figurfläche je Ebene</legend>
+      <label>Rosa <output id="o-rose"></output><input type="range" id="rose" min="20" max="80" value="50"></label>
+      <label>Petrol <output id="o-petrol"></output><input type="range" id="petrol" min="5" max="45" value="20"></label>
+      <label>Schwarz <output id="o-black"></output><input type="range" id="black" min="1" max="25" value="7"></label>
+    </fieldset>
+    <div class="leiste">
+      <button class="knopf haupt" id="los" disabled>Schablonen erzeugen</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+  </form>
+  <div id="ablauf" hidden>
+    <ol id="schritte"></ol>
+    <div class="werte" id="werte" aria-live="polite"></div>
+    <div class="leiste">
+      <button class="knopf haupt" id="play">Pause</button>
+      <button class="knopf" id="neu">Neu starten</button>
+      <button class="knopf" id="anderes">Anderes Foto</button>
+      <label class="wahl"><input type="checkbox" id="selbst"> Selbst sprühen</label>
+    </div>
+    <div class="leiste">
+      <a class="knopf" id="dl-png" download>Vierfarbbild (PNG)</a>
+      <a class="knopf" id="dl-stl" download>Schablonen (STL)</a>
+    </div>
+    <p class="quelle" id="dl-info"></p>
+  </div>
+  <p class="quelle">Das Foto wird nur für die Berechnung an den Server geschickt und nicht gespeichert. Die Druckdateien bleiben 30 Minuten auf dem Server. Die Trennung ist automatisch, ohne Retusche.</p>
+</aside>
+<script>
+let DATA;
+const W=840,H=1020,MX=60,MY=60,MW=720,MH=900;
+const LAYERS=[
+ {id:'S1',name:'Sonnengelb',rgb:[245,203,38],ral:'RAL 1018 (nahe)',off:[0,0]},
+ {id:'S2',name:'Korallrosa',rgb:[235,110,122],ral:'RAL 3014 (nahe)',off:[.25,-.15]},
+ {id:'S3',name:'Petrol',rgb:[12,86,100],ral:'RAL 5020 (nahe)',off:[-.2,.2]},
+ {id:'S4',name:'Tiefschwarz',rgb:[22,24,28],ral:'RAL 9005',off:[.15,.2]}];
+const css=c=>`rgb(${c.rgb})`;
+const PINS=[[15,15],[405,15],[15,495],[380,495]];
+let STEPS=[];
+function makeSteps(cutout){
+  LAYERS.forEach((l,i)=>{l.open=String(DATA.open[i]).replace('.',',');l.stege=DATA.bridges[i]});
+  const sum=DATA.bridges.reduce((a,b)=>a+b,0),mit=LAYERS.filter(l=>l.stege>0);
+  const stege=sum===0?'Alle Platten hängen ohne Stege zusammen, kein Materialstück fällt beim Schneiden heraus.'
+    :`Material ohne Verbindung zum Rahmen fiele beim Schneiden heraus. Stege brauchen ${mit.map(l=>`${l.name} (${l.stege})`).join(', ')}, insgesamt ${sum}. Gezeigt wird ${LAYERS[DATA.K].name}. Die Stege liegen wo möglich unter der nächsten, dunkleren Ebene.`;
+  STEPS=[
+   {t:'Foto zuschneiden',p:`Das Foto wird mittig auf 4:5 beschnitten${cutout?' und das Hauptmotiv automatisch freigestellt':''}. Das Motivfeld misst 360 × 450 mm, die Platte 420 × 510 mm.`},
+   {t:'Tonwerte trennen',p:'Das Bild wird geglättet und nach Helligkeit in vier Sprühebenen zerlegt, von hell nach dunkel. Die Grenzen folgen den eingestellten Flächenanteilen.'},
+   {t:'Stege setzen',p:stege},
+   {t:'Schablonen schneiden',p:'Vier Platten aus 1 mm PETG, per Laser geschnitten. Die Kerben an der Oberkante zeigen die Nummer, das versetzte Passloch P4 verhindert falsches Auflegen.'},
+   ...LAYERS.map((l,i)=>({t:`${l.name} sprühen`,k:i,p:[
+    `Platte auf die Passstifte legen und ganzflächig dünn sprühen. Gelb legt ${cutout?'die ganze Figur':'die hellen Flächen'} an.`,
+    'Rosa zeichnet die Mitteltöne. Die Ebene liegt vollständig auf dem Gelb, damit bei Versatz keine Blitzer entstehen.',
+    cutout?'Der Hintergrund entsteht allein durch diese Ebene. Dazu kommen die tiefen Schatten.':'Petrol legt die tiefen Schatten an.',
+    'Die dunkelsten Stellen. Danach ist das Bild fertig.'][i]})),
+   {t:'Fertiges Bild',p:'Vier Ebenen auf Papier, mit dem kleinen Passungsversatz von Hand aufgelegter Platten. Mit dem Regler lässt sich das Bild mit dem Foto vergleichen.'}];
+}
+
+const $=id=>document.getElementById(id);
+const stage=$('stage'),X=stage.getContext('2d');
+const mk=(w=W,h=H)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
+const load=b=>new Promise(r=>{const i=new Image;i.onload=()=>r(i);i.src=b});
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const ease=t=>t*t*(3-2*t);
+
+function alphaMask(img){
+  const c=mk(MW,MH),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,MW,MH);
+  const d=x.getImageData(0,0,MW,MH);
+  for(let i=0;i<d.data.length;i+=4)d.data[i+3]=d.data[i];
+  x.putImageData(d,0,0);return c;
+}
+function maskFilled(mask,color){
+  const c=mk(),x=c.getContext('2d');x.fillStyle=color;x.fillRect(0,0,W,H);
+  x.globalCompositeOperation='destination-in';x.drawImage(mask,MX,MY);return c;
+}
+function makePaper(){
+  const c=mk(),x=c.getContext('2d');x.fillStyle='#f6f1e8';x.fillRect(0,0,W,H);
+  const n=mk(W/4,H/4),nx=n.getContext('2d'),d=nx.createImageData(n.width,n.height);
+  for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=10}
+  nx.putImageData(d,0,0);x.imageSmoothingEnabled=true;x.drawImage(n,0,0,W,H);return c;
+}
+function blankPlate(k){
+  const c=mk(),x=c.getContext('2d'),l=LAYERS[k];
+  x.fillStyle=`rgb(${l.rgb.map(v=>v*.25+191)})`;x.fillRect(0,0,W,H);
+  x.globalCompositeOperation='destination-out';
+  for(const [a,b] of PINS){x.beginPath();x.arc(a*2,b*2,6,0,7);x.fill()}
+  const x0=W/2-k*12;
+  for(let i=0;i<=k;i++)x.fillRect(x0+i*24-6,0,12,10);
+  x.globalCompositeOperation='source-over';x.strokeStyle='rgba(22,24,28,.55)';x.lineWidth=1.5;x.strokeRect(.75,.75,W-1.5,H-1.5);
+  return c;
+}
+function ringPath(r){const p=new Path2D;p.moveTo(r[0],r[1]);for(let i=2;i<r.length;i+=2)p.lineTo(r[i],r[i+1]);p.closePath();return p}
+
+let photo,gray,masks,raw2,isl2,br2,paper,solid,plates,rings,sprite=[];
+const sprayed=[null,null,null,null];   // eigene Sprühspuren pro Ebene
+let print=mk(),px=print.getContext('2d');
+
+function art(k){
+  if(!sprayed[k])return solid[k];
+  const c=mk(),x=c.getContext('2d');x.drawImage(sprayed[k],0,0);
+  x.globalCompositeOperation='destination-in';x.drawImage(masks[k],MX,MY);return c;
+}
+function rebuild(n){
+  px.globalCompositeOperation='source-over';px.drawImage(paper,0,0);
+  for(let k=0;k<n;k++){const [a,b]=LAYERS[k].off;px.drawImage(art(k),a*2,b*2)}
+}
+function makeSprites(k){
+  const col=LAYERS[k].rgb;
+  return [0,1,2,3].map(()=>{
+    const s=140,c=mk(s,s),x=c.getContext('2d'),g=x.createRadialGradient(s/2,s/2,4,s/2,s/2,s/2);
+    g.addColorStop(0,`rgba(${col},.8)`);g.addColorStop(.55,`rgba(${col},.42)`);g.addColorStop(1,`rgba(${col},0)`);
+    x.fillStyle=g;x.fillRect(0,0,s,s);x.fillStyle=`rgba(${col},.8)`;
+    for(let i=0;i<70;i++){const a=Math.random()*7,r=30+Math.random()*38;x.fillRect(s/2+Math.cos(a)*r,s/2+Math.sin(a)*r,1.5,1.5)}
+    return c});
+}
+
+// ---- Szenen ----
+let step=0,t=0,playing=true,self=false,scene=null;
+const S={};
+
+S.foto={dur:4.5,draw(){
+  X.drawImage(paper,0,0);X.globalAlpha=ease(clamp(t/1));X.drawImage(photo,MX,MY,MW,MH);X.globalAlpha=1;
+  const f=ease(clamp((t-1.2)/1.2));
+  X.strokeStyle=css(LAYERS[2]);X.lineWidth=2;X.setLineDash([12,8]);X.globalAlpha=f;X.strokeRect(MX,MY,MW,MH);X.setLineDash([]);
+  X.fillStyle=css(LAYERS[2]);X.font='500 26px Barlow,sans-serif';X.textAlign='center';X.fillText('360 mm',W/2,44);
+  X.save();X.translate(36,H/2);X.rotate(-Math.PI/2);X.fillText('450 mm',0,0);X.restore();X.globalAlpha=1;
+}};
+S.ton={dur:9,draw(){
+  X.drawImage(paper,0,0);X.drawImage(photo,MX,MY,MW,MH);
+  X.globalAlpha=ease(clamp(t/1.5));X.drawImage(gray,MX,MY,MW,MH);X.globalAlpha=1;
+  const start=2.5,each=1.3;let before=false;
+  LAYERS.forEach((l,k)=>{
+    const f=ease(clamp((t-start-k*each)/each));if(!f)return;
+    if(!before&&f>0){X.save();X.globalAlpha=f;X.drawImage(paper,0,0);X.restore();before=true}
+    X.save();X.beginPath();X.rect(0,0,W,MY+MH*f);X.clip();X.drawImage(solid[k],0,0);X.restore();
+    if(f<1){X.fillStyle=css(l);X.fillRect(MX,MY+MH*f-2,MW,4)}
+  });
+}};
+S.stege={dur:10.5,enter(){
+  const c=mk(),x=c.getContext('2d');x.drawImage(blankPlate(DATA.K),0,0);
+  x.globalCompositeOperation='destination-out';x.drawImage(raw2,MX,MY);
+  this.rahmen=mk();const y=this.rahmen.getContext('2d');y.drawImage(c,0,0);
+  y.globalCompositeOperation='destination-out';y.drawImage(isl2,MX,MY);
+  this.insel=maskFilled(isl2,css(LAYERS[DATA.K]));
+  const b=maskFilled(br2,'rgb(12,86,100)');this.steg=mk();
+  const z=this.steg.getContext('2d');for(const [a,d] of [[0,0],[2,0],[-2,0],[0,2],[0,-2]])z.drawImage(b,a,d);
+},draw(){
+  X.drawImage(paper,0,0);X.drawImage(this.rahmen,0,0);
+  if(t<4){const d=ease(clamp((t-1.8)/1.8));X.globalAlpha=1-d;X.drawImage(this.insel,0,d*320);X.globalAlpha=1}
+  else{
+    X.globalAlpha=ease(clamp((t-4)/.6));X.drawImage(this.insel,0,0);X.globalAlpha=1;
+    const f=ease(clamp((t-5)/3));X.save();X.beginPath();X.rect(0,0,W,MY+MH*f);X.clip();X.drawImage(this.steg,0,0);X.restore();
+  }
+}};
+S.laser={dur:18,enter(){this.k=-1;this.next()},next(){
+  this.k++;this.done=this.k>3;this.hold=0;if(this.done)return;
+  this.p=mk();const x=this.px=this.p.getContext('2d');x.drawImage(blankPlate(this.k),0,0);
+  this.r=rings[this.k];this.len=0;for(const r of this.r)for(let i=2;i<r.length;i+=2)this.len+=Math.hypot(r[i]-r[i-2],r[i+1]-r[i-1]);
+  this.s=0;this.ri=0;this.pi=0;this.pos=[0,0];
+},tick(dt){
+  if(this.done){this.hold+=dt;return this.hold>2.6}
+  if(this.ri>=this.r.length){this.hold+=dt;if(this.hold>.5){plates[this.k]=this.p;this.next()}return false}
+  let rest=this.len/3.4*dt;const x=this.px;
+  x.strokeStyle='rgba(22,24,28,.8)';x.lineWidth=1.5;
+  while(rest>1e-6&&this.ri<this.r.length){
+    const r=this.r[this.ri];
+    if(this.pi===0){this.pos=[r[0],r[1]];this.pi=2}
+    if(this.pi>=r.length){x.save();x.globalCompositeOperation='destination-out';x.fill(ringPath(r));x.restore();
+      x.stroke(ringPath(r));this.ri++;this.pi=0;continue}
+    const a=this.pos,dx=r[this.pi]-a[0],dy=r[this.pi+1]-a[1],d=Math.hypot(dx,dy),q=d?Math.min(1,rest/d):1,b=[a[0]+dx*q,a[1]+dy*q];
+    x.beginPath();x.moveTo(...a);x.lineTo(...b);x.stroke();
+    this.pos=b;rest-=d*q;if(q===1)this.pi+=2;
+  }
+  return false;
+},draw(){
+  X.fillStyle=getComputedStyle(document.body).backgroundColor;X.fillRect(0,0,W,H);
+  if(this.done){
+    const s=.47,g=(W-2*W*s)/3;
+    plates.forEach((p,i)=>{const a=g+(i%2)*(W*s+g),b=(H-2*H*s)/3+(i>>1)*(H*s+(H-2*H*s)/3);X.drawImage(paper,a,b,W*s,H*s);X.drawImage(p,a,b,W*s,H*s)});
+    return;
+  }
+  X.drawImage(paper,0,0);X.drawImage(this.p,0,0);
+  if(this.ri<this.r.length){const [a,b]=this.pos,g=X.createRadialGradient(a,b,1,a,b,22);
+    g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.3,'rgba(245,203,38,.9)');g.addColorStop(1,'rgba(245,203,38,0)');
+    X.fillStyle=g;X.beginPath();X.arc(a,b,22,0,7);X.fill()}
+  X.fillStyle=css(LAYERS[this.k]);X.font='600 26px Barlow,sans-serif';X.textAlign='left';X.fillText(`${LAYERS[this.k].id} ${LAYERS[this.k].name}`,14,H-14);
+}};
+S.spray={enter(k){
+  this.k=k;this.phase='auflegen';this.pt=0;
+  sprayed[k]=null;rebuild(k);
+  sprite=makeSprites(k);
+  this.paint=mk();this.pc=this.paint.getContext('2d');
+  this.plate=mk();this.tc=this.plate.getContext('2d');this.tc.drawImage(plates[k],0,0);
+  this.live=mk();this.lc=this.live.getContext('2d');
+  this.path=0;this.can=null;this.cover=0;this.last=0;
+  // Stichprobe der Öffnung für die Deckung
+  const m=mk(210,255),x=m.getContext('2d',{willReadFrequently:true});x.drawImage(masks[k],MX/4,MY/4,MW/4,MH/4);
+  const a=x.getImageData(0,0,210,255).data;this.samples=[];for(let i=0;i<a.length/4;i++)if(a[i*4+3]>128)this.samples.push(i);
+},stamp(a,b){
+  const s=sprite[Math.random()*4|0],q=70;
+  this.pc.drawImage(s,a-q,b-q);
+  this.tc.save();this.tc.globalCompositeOperation='source-atop';this.tc.drawImage(s,a-q,b-q);this.tc.restore();
+},line(p,q){
+  const d=Math.hypot(q[0]-p[0],q[1]-p[1]),n=Math.max(1,d/14|0);
+  for(let i=1;i<=n;i++)this.stamp(p[0]+(q[0]-p[0])*i/n,p[1]+(q[1]-p[1])*i/n);
+},auto(u){ // Zickzack über die Platte, u = zurückgelegte Zeilen
+  const row=44,rows=Math.ceil(H/row)+1,i=Math.min(rows-1,u|0),f=u-i,l=-40,r=W+40;
+  return [i%2?r+(l-r)*f:l+(r-l)*f,row/2+i*row];
+},measure(){
+  const c=mk(210,255),x=c.getContext('2d',{willReadFrequently:true});x.drawImage(this.paint,0,0,210,255);
+  const a=x.getImageData(0,0,210,255).data;let n=0;for(const i of this.samples)if(a[i*4+3]>200)n++;
+  this.cover=this.samples.length?Math.round(100*n/this.samples.length):0;
+},finish(){
+  sprayed[this.k]=this.paint;rebuild(this.k+1);
+  this.phase='trocknen';this.pt=0;this.can=null;showValues();
+},tick(dt){
+  this.pt+=dt;
+  if(this.phase==='auflegen'&&this.pt>1.1){this.phase='sprühen';this.pt=0;showValues()}
+  else if(this.phase==='sprühen'&&!self){
+    const prev=this.can||this.auto(this.path),rows=Math.ceil(H/44)+1;
+    this.path+=dt*rows/3.8;this.can=this.auto(this.path);this.line(prev,this.can);
+    if(this.path>=rows){
+      for(const x of [this.pc,this.tc]){x.save();if(x===this.tc)x.globalCompositeOperation='source-atop';x.globalAlpha=.75;x.fillStyle=css(LAYERS[this.k]);x.fillRect(0,0,W,H);x.restore()}
+      this.finish();
+    }
+  }else if(this.phase==='sprühen'&&this.pt-this.last>.25){this.last=this.pt;this.measure();showValues()}
+  else if(this.phase==='trocknen'&&this.pt>1.5){this.phase='abheben';this.pt=0;showValues()}
+  else if(this.phase==='abheben'&&this.pt>1.1){this.phase='fertig';this.pt=0;return true}
+  return this.phase==='fertig'&&this.pt>.3;
+},draw(){
+  X.drawImage(print,0,0);
+  if(this.phase==='fertig')return;
+  let y=0;
+  if(this.phase==='auflegen')y=-(1-ease(clamp(this.pt/1)))*H;
+  if(this.phase==='abheben')y=-ease(clamp(this.pt/1))*H;
+  if(this.phase==='sprühen'){
+    this.lc.clearRect(0,0,W,H);this.lc.globalCompositeOperation='source-over';this.lc.drawImage(this.paint,0,0);
+    this.lc.globalCompositeOperation='destination-in';this.lc.drawImage(masks[this.k],MX,MY);X.drawImage(this.live,0,0);
+  }
+  for(const [a,b] of PINS){X.fillStyle='#8b8f92';X.beginPath();X.arc(a*2,b*2,6,0,7);X.fill()}
+  X.drawImage(this.plate,0,y);
+  if(this.can){const [a,b]=this.can;
+    X.strokeStyle='rgba(246,241,232,.9)';X.lineWidth=2;X.beginPath();X.arc(a,b,62,0,7);X.stroke();
+    X.fillStyle=css(LAYERS[this.k]);X.beginPath();X.arc(a,b,13,0,7);X.fill();X.stroke()}
+}};
+S.ende={dur:1,draw(){
+  X.drawImage(print,0,0);
+  const v=+($('vergleich')?.value??100);
+  if(v<100){const c=MX+MW*v/100;X.save();X.beginPath();X.rect(c,MY,MX+MW-c,MH);X.clip();X.drawImage(photo,MX,MY,MW,MH);X.restore();
+    X.fillStyle=css(LAYERS[0]);X.fillRect(c-1.5,MY,3,MH)}
+}};
+
+function sceneFor(n){return [S.foto,S.ton,S.stege,S.laser,S.spray,S.spray,S.spray,S.spray,S.ende][n]}
+function go(n){
+  step=n;t=0;scene=sceneFor(n);
+  if(n<4)rebuild(0);
+  if(STEPS[n].k!==undefined){
+    for(let k=STEPS[n].k+1;k<4;k++)sprayed[k]=null;
+    scene.enter(STEPS[n].k);
+  }else if(scene.enter)scene.enter();
+  if(n===8)rebuild(4);
+  document.querySelectorAll('#schritte li').forEach((l,i)=>{l.classList.toggle('an',i===n);
+    l.querySelector('button').setAttribute('aria-current',i===n?'step':'false')});
+  const a=document.querySelectorAll('#schritte li')[n];a.scrollIntoView({block:'nearest'});
+  stage.classList.toggle('spruehen',STEPS[n].k!==undefined&&self);
+  showValues();
+}
+function showValues(){
+  const v=$('werte'),s=STEPS[step],k=s.k;
+  if(step===8){if(!$('vergleich'))v.innerHTML='<label>Vergleich mit dem Foto<input type="range" id="vergleich" min="0" max="100" value="100"></label>';return}
+  if(k===undefined){v.textContent='';return}
+  const l=LAYERS[k],c=scene===S.spray?scene:{};
+  const text=`${l.ral}, ${l.open} % Öffnung, ${l.stege} ${l.stege===1?'Steg':'Stege'}`;
+  if(self&&c.phase==='sprühen'){
+    if(!$('deckung')){
+      v.innerHTML='Über die Platte ziehen. Deckung <span id="deckung"></span> % <button class="knopf" id="abnehmen">Platte abnehmen</button>';
+      $('abnehmen').onclick=()=>scene.finish();
+    }
+    $('deckung').textContent=c.cover;
+  }else v.textContent=c.phase==='trocknen'?'5 min antrocknen lassen':text;
+}
+let lastT=0;
+function frame(now){
+  if(!scene){looping=false;return}
+  const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+  const live=playing||(self&&scene===S.spray);
+  if(live){
+    t+=dt;
+    const over=scene.tick?scene.tick(dt):t>scene.dur;
+    if(over&&playing){if(step<8)go(step+1);else setPlay(false)}
+  }
+  scene.draw();requestAnimationFrame(frame);
+}
+function setPlay(p){playing=p;$('play').textContent=p?'Pause':'Abspielen'}
+
+// ---- Bedienung ----
+function pos(e){const r=stage.getBoundingClientRect();return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
+let down=false;
+const canSpray=()=>self&&scene===S.spray&&scene.phase==='sprühen';
+stage.addEventListener('pointerdown',e=>{if(!canSpray())return;down=true;stage.setPointerCapture(e.pointerId);scene.can=pos(e);scene.stamp(...scene.can)});
+stage.addEventListener('pointermove',e=>{if(!canSpray())return;const p=pos(e);if(down)scene.line(scene.can,p);scene.can=p});
+stage.addEventListener('pointerup',()=>down=false);
+$('play').onclick=()=>{if(step===8&&!playing){reset();return}setPlay(!playing)};
+function reset(){sprayed.fill(null);$('werte').textContent='';setPlay(true);go(0)}
+$('neu').onclick=reset;
+$('selbst').onchange=e=>{self=e.target.checked;stage.classList.toggle('spruehen',STEPS[step].k!==undefined&&self);showValues()};
+addEventListener('keydown',e=>{
+  if(!scene||e.target.closest('input,button')&&e.key===' ')return;
+  if(e.key===' '){e.preventDefault();$('play').click()}
+  if(e.key==='ArrowRight'&&step<8)go(step+1);
+  if(e.key==='ArrowLeft'&&step>0)go(step-1);
+});
+
+// ---- Upload und Berechnung ----
+let preview=null,blob=null,busy=null;
+function drawWaiting(){
+  if(!paper)paper=makePaper();
+  X.drawImage(paper,0,0);
+  if(preview){
+    // gleicher Zuschnitt wie im Server: mittig, hochformatig oben ein Drittel
+    const w=preview.width,h=preview.height;let sx=0,sy=0,sw=w,sh=h;
+    if(w/h>.8){sw=Math.round(h*.8);sx=(w-sw)/2|0}else{sh=Math.round(w*1.25);sy=Math.max(0,(h-sh)/3|0)}
+    X.drawImage(preview,sx,sy,sw,sh,MX,MY,MW,MH);
+  }else{
+    X.strokeStyle=css(LAYERS[2]);X.lineWidth=2;X.setLineDash([12,8]);X.strokeRect(MX,MY,MW,MH);X.setLineDash([]);
+    X.fillStyle=css(LAYERS[2]);X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText('Foto hier ablegen',W/2,H/2);
+  }
+  if(busy){
+    X.fillStyle='rgba(12,86,100,.78)';X.fillRect(MX,MY,MW,MH);
+    const p=busy.p,y=H/2;X.fillStyle='rgba(246,241,232,.3)';X.fillRect(MX+80,y+20,MW-160,8);
+    X.fillStyle=css(LAYERS[0]);X.fillRect(MX+80,y+20,(MW-160)*p,8);
+    X.fillStyle='#f6f1e8';X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText(busy.text,W/2,y);
+  }
+}
+function waitLoop(){if(!scene){drawWaiting();requestAnimationFrame(waitLoop)}}
+function status(text,err=false){const s=$('status');s.textContent=text;s.classList.toggle('fehler',err)}
+async function pick(file){
+  if(!file)return;
+  if(!file.type.startsWith('image/')){status('Die Datei ist kein Bild.',true);return}
+  status('Foto wird gelesen …');
+  try{
+    const img=await load(URL.createObjectURL(file));
+    const s=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=mk(Math.round(img.naturalWidth*s),Math.round(img.naturalHeight*s));
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    preview=c;blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
+    $('dateiname').textContent=file.name;$('los').disabled=false;status('');
+    $('titel').textContent=file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim()||'Eigenes Foto';
+  }catch(e){status('Das Bild lässt sich im Browser nicht öffnen. JPEG oder PNG verwenden.',true)}
+}
+$('datei').onchange=e=>pick(e.target.files[0]);
+for(const el of [stage,$('ablage')]){
+  el.addEventListener('dragover',e=>{e.preventDefault();$('ablage').classList.add('ueber')});
+  el.addEventListener('dragleave',()=>$('ablage').classList.remove('ueber'));
+  el.addEventListener('drop',e=>{e.preventDefault();$('ablage').classList.remove('ueber');if(!$('upload').hidden)pick(e.dataTransfer.files[0])});
+}
+for(const k of ['rose','petrol','black']){const f=()=>$('o-'+k).value=$(k).value+' %';$(k).oninput=f;f()}
+$('upload').onsubmit=async e=>{
+  e.preventDefault();if(!blob)return;
+  const cutout=$('frei').checked,f=new FormData;
+  f.append('foto',blob,'foto.jpg');f.append('freistellen',cutout?'1':'0');
+  for(const k of ['rose','petrol','black'])f.append(k,$(k).value);
+  $('los').disabled=true;status('');busy={p:0,text:'Hochladen …'};
+  try{
+    let r=await fetch('api/auftrag',{method:'POST',body:f}),j=await r.json();
+    if(!r.ok)throw new Error(j.fehler||'Hochladen fehlgeschlagen');
+    const id=j.id;
+    for(;;){
+      await new Promise(r=>setTimeout(r,700));
+      r=await fetch('api/auftrag/'+id);j=await r.json();
+      if(!r.ok||j.fehler)throw new Error(j.fehler||'Berechnung fehlgeschlagen');
+      busy={p:j.anteil,text:j.schritt};
+      if(j.data){DATA=j.data;break}
+    }
+    const name=$('titel').textContent.trim().replace(/[^\p{L}\p{N}]+/gu,'_')||'motiv';
+    $('dl-png').href=`api/auftrag/${id}/png`;$('dl-png').download=`${name}_vierfarbbild.png`;
+    $('dl-stl').href=`api/auftrag/${id}/stl`;$('dl-stl').download=`${name}_schablonen_250mm.stl`;
+    const [pw,ph]=DATA.druck.platte;
+    $('dl-info').textContent=`STL: vier Platten je ${String(pw).replace('.',',')} × ${String(ph).replace('.',',')} × 0,5 mm auf 250 × 250 mm, Maßstab ${String(Math.round(DATA.druck.massstab*1000)/10).replace('.',',')} %. Downloads bleiben 30 Minuten verfügbar.`;
+    busy={p:1,text:'Simulation wird vorbereitet …'};
+    await start(cutout);
+  }catch(err){status(err.message,true);$('los').disabled=false}
+  busy=null;
+};
+for(const id of ['dl-png','dl-stl'])$(id).addEventListener('click',async e=>{
+  const a=e.currentTarget;if(a.dataset.ok)return;   // geprüfter zweiter Klick lädt direkt
+  e.preventDefault();
+  const r=await fetch(a.href,{method:'HEAD'}).catch(()=>null);
+  if(r&&r.ok){a.dataset.ok='1';a.click();delete a.dataset.ok}
+  else $('dl-info').textContent=r?'Die Datei ist auf dem Server nicht mehr vorhanden (abgelaufen oder Server neu gestartet). Bitte „Anderes Foto“ wählen und das Foto neu berechnen lassen.':'Der Server ist nicht erreichbar. Läuft web/app.py?';
+});
+$('anderes').onclick=()=>{
+  scene=null;sprayed.fill(null);$('ablauf').hidden=true;$('upload').hidden=false;$('los').disabled=!blob;$('werte').textContent='';
+  stage.classList.remove('spruehen');waitLoop();
+};
+
+let looping=false;
+async function start(cutout){
+  makeSteps(cutout);
+  const b=(s,m)=>`data:${m};base64,${s}`;
+  const ms=await Promise.all(DATA.masks.map(s=>load(b(s,'image/png'))));
+  [photo,gray]=await Promise.all([load(b(DATA.photo,'image/jpeg')),load(b(DATA.gray,'image/jpeg'))]);
+  [raw2,isl2,br2]=(await Promise.all([DATA.raw,DATA.isl,DATA.br].map(s=>load(b(s,'image/png'))))).map(alphaMask);
+  masks=ms.map(alphaMask);rings=DATA.rings;
+  paper=makePaper();
+  solid=LAYERS.map((l,k)=>maskFilled(masks[k],css(l)));
+  plates=LAYERS.map((l,k)=>{
+    const c=mk(),x=c.getContext('2d');x.drawImage(blankPlate(k),0,0);
+    x.globalCompositeOperation='destination-out';x.drawImage(masks[k],MX,MY);
+    x.globalCompositeOperation='source-over';x.strokeStyle='rgba(22,24,28,.8)';x.lineWidth=1.5;for(const r of rings[k])x.stroke(ringPath(r));
+    return c});
+  $('schritte').innerHTML=STEPS.map((s,i)=>{
+    const n=s.k!==undefined?s.k+1:0;
+    const mark=n?`<span class="platte" style="--c:${css(LAYERS[s.k])};--n:${s.k<2?'#16181c':'#f6f1e8'}">${'<i></i>'.repeat(n)}</span>`:`<span class="nr">${i+1}</span>`;
+    return `<li><button>${mark}<span>${s.t}</span></button><p>${s.p}</p></li>`}).join('');
+  document.querySelectorAll('#schritte button').forEach((c,i)=>c.onclick=()=>{if(i===8)$('werte').textContent='';go(i)});
+  $('upload').hidden=true;$('ablauf').hidden=false;
+  sprayed.fill(null);setPlay(!matchMedia('(prefers-reduced-motion: reduce)').matches);
+  go(0);
+  if(!looping){looping=true;requestAnimationFrame(n=>{lastT=n;frame(n)})}
+}
+waitLoop();
+</script>
+</body>
+</html>

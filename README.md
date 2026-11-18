@@ -31,6 +31,14 @@ python3 src/export.py /tmp/satz.pkl
 
 Benötigt `opencv-python`, `numpy`, `shapely` ab 2.1, `reportlab` sowie `usdcat` und `usdzip`.
 
+## Webseite für eigene Fotos
+
+```sh
+python3 web/app.py
+```
+
+startet einen lokalen Server auf <http://127.0.0.1:8000>. Dort lässt sich ein Foto hochladen. Der Server schneidet es mittig auf 4:5 zu, stellt das Hauptmotiv per GrabCut frei (abschaltbar) und trennt die Tonwerte nach einstellbaren Flächenanteilen (`src/separation_auto.py`). Danach berechnet er Stege und Konturen mit `src/stencil_geom.py` und zeigt den Ablauf als Simulation wie bei Maria. Eine Berechnung dauert etwa 30 bis 60 Sekunden. Danach stehen zwei Downloads bereit: das Vierfarbbild als PNG (6 px/mm) und eine STL-Datei mit allen vier Schablonen im 2 × 2-Raster für ein Druckbett von 250 × 250 mm, 0,5 mm dick, Maßstab 23,7 % (`src/druck.py`). Fotos werden nicht gespeichert, die Druckdateien bleiben 30 Minuten in einem temporären Ordner (`$TMPDIR/schablone_web`), auch über einen Neustart des Servers hinweg. Zusätzlich benötigt `flask`.
+
 ## Aufbau
 
 | Pfad | Inhalt |
@@ -40,6 +48,8 @@ Benötigt `opencv-python`, `numpy`, `shapely` ab 2.1, `reportlab` sowie `usdcat`
 | `src/separation.py`, `src/separation_maria.py`, `src/separation_carl.py` | Tonwerttrennung je Motiv |
 | `src/stencil_geom.py` | Stege, Vektorisierung, Platten |
 | `src/export.py` | USDZ, PDF, Spraybild |
+| `src/separation_auto.py`, `src/simdata.py`, `src/druck.py` | automatische Trennung, Simulationsdaten, STL und Vierfarbbild für die Webseite |
+| `web/app.py`, `web/static/index.html` | Flask-Backend und Seite mit Upload und Simulation |
 | `ausgabe/` | Ergebnisse |
 
 ## Ausgabe
