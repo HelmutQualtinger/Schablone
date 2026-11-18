@@ -95,8 +95,10 @@ def create():
             return min(hi, max(lo, float(request.form.get(name, default)))) / 100
         except ValueError:
             return default / 100
-    share = dict(rose=pct("rose", 20, 80, 50), petrol=pct("petrol", 5, 45, 20), black=pct("black", 1, 25, 7))
-    # Ebenen sind kumulativ: dunklere Ebene darf nicht größer sein als die hellere
+    share = dict(white=pct("white", 0, 40, 10), rose=pct("rose", 20, 80, 50), petrol=pct("petrol", 5, 45, 20),
+                 black=pct("black", 1, 25, 7))
+    # Ebenen sind kumulativ: dunklere Ebene darf nicht größer sein als die hellere, Weiß nicht in Rosa ragen
+    share["rose"] = min(share["rose"], 1 - share["white"])
     share["petrol"] = min(share["petrol"], share["rose"])
     share["black"] = min(share["black"], share["petrol"])
     cutout = request.form.get("freistellen", "1") == "1"

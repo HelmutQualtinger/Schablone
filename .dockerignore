@@ -1,0 +1,7 @@
+# Nur Code ins Build-Kontext, private Fotos und Ergebnisse bleiben draußen
+*
+!pyproject.toml
+!uv.lock
+!src/*.py
+!web/app.py
+!web/static/

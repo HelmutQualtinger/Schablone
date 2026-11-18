@@ -34,10 +34,19 @@ Benötigt `opencv-python`, `numpy`, `shapely` ab 2.1, `reportlab` sowie `usdcat`
 ## Webseite für eigene Fotos
 
 ```sh
-python3 web/app.py
+uv run web/app.py
 ```
 
-startet einen lokalen Server auf <http://127.0.0.1:8000>. Dort lässt sich ein Foto hochladen. Der Server schneidet es mittig auf 4:5 zu, stellt das Hauptmotiv per GrabCut frei (abschaltbar) und trennt die Tonwerte nach einstellbaren Flächenanteilen (`src/separation_auto.py`). Danach berechnet er Stege und Konturen mit `src/stencil_geom.py` und zeigt den Ablauf als Simulation wie bei Maria. Eine Berechnung dauert etwa 30 bis 60 Sekunden. Danach stehen zwei Downloads bereit: das Vierfarbbild als PNG (6 px/mm) und eine STL-Datei mit allen vier Schablonen im 2 × 2-Raster für ein Druckbett von 250 × 250 mm, 0,5 mm dick, Maßstab 23,7 % (`src/druck.py`). Fotos werden nicht gespeichert, die Druckdateien bleiben 30 Minuten in einem temporären Ordner (`$TMPDIR/schablone_web`), auch über einen Neustart des Servers hinweg. Zusätzlich benötigt `flask`.
+startet einen lokalen Server auf <http://127.0.0.1:8000>. Dort lässt sich ein Foto hochladen. Der Server schneidet es mittig auf 4:5 zu, stellt das Hauptmotiv per GrabCut frei (abschaltbar) und trennt die Tonwerte nach einstellbaren Flächenanteilen (`src/separation_auto.py`). Danach berechnet er Stege und Konturen mit `src/stencil_geom.py` und zeigt den Ablauf als Simulation wie bei Maria. Eine Berechnung dauert etwa 30 bis 60 Sekunden. Danach stehen zwei Downloads bereit: das Vierfarbbild als PNG (6 px/mm) und eine STL-Datei mit allen vier Schablonen im 2 × 2-Raster für ein Druckbett von 250 × 250 mm, 0,5 mm dick, Maßstab 23,7 % (`src/druck.py`). Fotos werden nicht gespeichert, die Druckdateien bleiben 30 Minuten in einem temporären Ordner (`$TMPDIR/schablone_web`), auch über einen Neustart des Servers hinweg. Abhängigkeiten stehen in `pyproject.toml`, die genauen Versionen in `uv.lock`. `uv run` legt beim ersten Aufruf `.venv/` an, OpenCV kommt dabei aus der Gruppe `lokal`.
+
+### Container
+
+```sh
+docker build -t schablone .
+docker run --rm -p 8000:8000 schablone
+```
+
+Alpine-Image mit zwei Stufen, rund 180 MB. Die Build-Stufe installiert die Python-Pakete mit `uv sync --frozen` aus `uv.lock` und baut OpenCV nur mit den Modulen core, imgproc, imgcodecs und photo, statisch gelinkt in `cv2` (erster Build etwa 5 Minuten). Für musl gibt es kein OpenCV-Wheel, und Alpines `py3-opencv` brächte Qt, GTK und ffmpeg mit (rund 880 MB). Das Laufzeit-Image enthält nur Python, das venv und `libstdc++`, läuft als unprivilegierter Benutzer mit Gunicorn und hat einen Healthcheck. `.dockerignore` hält `quelle/` mit den privaten Fotos aus dem Build-Kontext.
 
 ## Aufbau
 

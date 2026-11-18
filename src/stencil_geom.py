@@ -14,6 +14,9 @@ REG_HOLES = [(15, 15), (405, 15), (15, 495), (380, 495)]   # asymmetrisch: verhi
 REG_D = 6.0
 NOTCH_W, NOTCH_D, NOTCH_PITCH = 6, 5, 12
 ROUTE_PX_MM = 2
+BRIDGES_PER_ISLAND = 2                        # zweiter Steg macht Inseln verdrehsicher und stabiler
+SECOND_GAP = (8.0, 5.0)                       # mm: Abstand des zweiten Stegs vom ersten, kleinere Inseln mit 5 mm
+SECOND_MIN_AREA = 20                          # mm²: kleinere Stücke sind abgetrennte Materialhälse, keine Inseln
 
 LAYERS = [
     dict(id="S1", name="Sonnengelb", key="yellow", rgb=(245, 203, 38), ral="RAL 1018 (nahe)", file=f"{PREFIX}_S1_gelb"),
@@ -92,7 +95,7 @@ def route_bridges(opening, hidden):
                 path.append(q)
                 q = prev[q]
             area = len(members[l]) / ROUTE_PX_MM ** 2
-            paths.append((path + [q], area))
+            paths.append((path + [q], area, l))
             for m in members[l]:
                 dist[m] = 0
                 prev[m] = -1
@@ -109,9 +112,18 @@ def route_bridges(opening, hidden):
                     prev[q] = p
                     heapq.heappush(heap, (d + c, q))
 
+    if BRIDGES_PER_ISLAND > 1:
+        extra = []
+        for p, a, l in paths:
+            if a >= SECOND_MIN_AREA:
+                s = next(filter(None, (second_bridge(p, a, l, lab_f, members[l], cost, H, W, g) for g in SECOND_GAP)), None)
+                if s:
+                    extra.append(s)
+        paths += extra
+
     bridged = solid.copy()
     lengths = []
-    for path, area in paths:
+    for path, area, _ in paths:
         pts = np.array([[(q % W), (q // W)] for q in path if q >= 0]) * PX_MM / ROUTE_PX_MM
         width = 3.0 if area < 400 else 4.5 if area < 2500 else 7.0
         cv2.polylines(bridged, [pts.astype(np.int32)], False, 1, round(width * PX_MM), cv2.LINE_8)
@@ -120,6 +132,48 @@ def route_bridges(opening, hidden):
     out = morph(out, cv2.MORPH_OPEN, MIN_WEB / 2)   # verkleinert nur Öffnungen, Stege bleiben
     out = drop_small(out, 14)
     return out, len(paths)
+
+
+def second_bridge(first, area, l, lab_f, members, cost, H, W, gap):
+    """Zweiter Steg für Insel l: kürzester Weg zu anderem Material außerhalb eines Korridors um den ersten Steg.
+
+    Liefert (Pfad, Fläche, l) oder None, wenn die Insel zu klein ist oder kein zweiter Weg existiert.
+    """
+    block = np.zeros((H, W), np.uint8)
+    pts = np.array([[q % W, q // W] for q in first if q >= 0], np.int32)
+    cv2.polylines(block, [pts], False, 1, 1)
+    r = round(gap * ROUTE_PX_MM)
+    block = cv2.dilate(block, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))).ravel() > 0
+    sources = [int(m) for m in members if not block[m]]
+    if not sources:
+        return None
+    dist = {m: 0.0 for m in sources}
+    prev = {}
+    heap = [(0.0, m) for m in sources]
+    heapq.heapify(heap)
+    limit = 60 * ROUTE_PX_MM * 9.0          # höchstens rund 60 mm Weg durch Öffnung
+    while heap:
+        d, p = heapq.heappop(heap)
+        if d > dist.get(p, np.inf) or d > limit:
+            continue
+        if lab_f[p] and lab_f[p] != l:
+            path = [p]
+            while path[-1] in prev:
+                path.append(prev[path[-1]])
+            return path, area, l
+        y, x = p // W, p % W
+        for dy, dx, s in ((0, 1, 1), (1, 0, 1), (0, -1, 1), (-1, 0, 1), (1, 1, 1.41), (1, -1, 1.41), (-1, 1, 1.41), (-1, -1, 1.41)):
+            yy, xx = y + dy, x + dx
+            if 0 <= yy < H and 0 <= xx < W:
+                q = yy * W + xx
+                if block[q] or lab_f[q] == l:
+                    continue
+                c = d + cost[q] * s
+                if c < dist.get(q, np.inf):
+                    dist[q] = c
+                    prev[q] = p
+                    heapq.heappush(heap, (c, q))
+    return None
 
 
 def chaikin(pts, it=2):

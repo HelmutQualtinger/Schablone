@@ -10,7 +10,7 @@ from stencil_geom import PLATE_W, PLATE_H
 BED = 250.0        # mm, quadratisches Druckbett
 HEIGHT = 0.5       # mm
 EDGE, GAP = 2.0, 4.0
-PAPER = (246, 241, 232)
+PAPER = (255, 255, 255)   # Weiß: unbesprühtes Papier unter allen geschlossenen Platten
 
 
 def layout(bed=BED):
@@ -27,7 +27,8 @@ def prism(poly, h):
     tris = []
     for t in shapely.get_parts(shapely.constrained_delaunay_triangles(poly)):
         c = np.array(t.exterior.coords[:3])
-        if np.cross(c[1] - c[0], c[2] - c[0]) < 0:
+        (ax, ay), (bx, by) = c[1] - c[0], c[2] - c[0]
+        if ax * by - ay * bx < 0:                            # im Uhrzeigersinn: umdrehen
             c = c[::-1]
         tris.append(np.c_[c, np.full(3, h)])                 # oben, Normale +z
         tris.append(np.c_[c[::-1], np.zeros(3)])             # unten, Normale -z

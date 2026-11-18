@@ -5,8 +5,9 @@ import numpy as np
 PX_MM = 6                 # Arbeitsraster
 MOTIF_W, MOTIF_H = 360, 450   # mm
 
-# Anteil der Figurfläche, der mindestens in die jeweilige Ebene fällt (dunkelste Pixel)
-SHARE = dict(rose=0.50, petrol=0.20, black=0.07)
+# Anteil der Figurfläche je Ebene: rose, petrol, black zählen die dunkelsten Pixel,
+# white die hellsten. Weiß hat keine eigene Schablone: dort sind alle vier Platten geschlossen.
+SHARE = dict(white=0.10, rose=0.50, petrol=0.20, black=0.07)
 
 
 def crop45(img):
@@ -67,7 +68,7 @@ def separate_image(img, cutout=True, share=None):
         fig = np.ones((H, W), bool)
 
     q = lambda p: np.quantile(g[fig], p)
-    yellow = fig.copy()
+    yellow = fig & (g < q(1 - share["white"])) if share["white"] > 0 else fig.copy()
     rose = fig & (g < q(share["rose"]))
     petrol = ~fig | (fig & (g < q(share["petrol"])))
     black = fig & (g < q(share["black"]))

@@ -79,6 +79,7 @@ fieldset output{float:right;font-variant-numeric:tabular-nums}
     <label class="wahl"><input type="checkbox" id="frei" checked> Hauptmotiv freistellen, Hintergrund petrol</label>
     <fieldset>
       <legend>Anteil der Figurfläche je Ebene</legend>
+      <label>Weiß, hellste Stellen ohne Farbe <output id="o-white"></output><input type="range" id="white" min="0" max="40" value="10"></label>
       <label>Rosa <output id="o-rose"></output><input type="range" id="rose" min="20" max="80" value="50"></label>
       <label>Petrol <output id="o-petrol"></output><input type="range" id="petrol" min="5" max="45" value="20"></label>
       <label>Schwarz <output id="o-black"></output><input type="range" id="black" min="1" max="25" value="7"></label>
@@ -116,22 +117,22 @@ const LAYERS=[
 const css=c=>`rgb(${c.rgb})`;
 const PINS=[[15,15],[405,15],[15,495],[380,495]];
 let STEPS=[];
-function makeSteps(cutout){
+function makeSteps(cutout,white){
   LAYERS.forEach((l,i)=>{l.open=String(DATA.open[i]).replace('.',',');l.stege=DATA.bridges[i]});
   const sum=DATA.bridges.reduce((a,b)=>a+b,0),mit=LAYERS.filter(l=>l.stege>0);
   const stege=sum===0?'Alle Platten hängen ohne Stege zusammen, kein Materialstück fällt beim Schneiden heraus.'
     :`Material ohne Verbindung zum Rahmen fiele beim Schneiden heraus. Stege brauchen ${mit.map(l=>`${l.name} (${l.stege})`).join(', ')}, insgesamt ${sum}. Gezeigt wird ${LAYERS[DATA.K].name}. Die Stege liegen wo möglich unter der nächsten, dunkleren Ebene.`;
   STEPS=[
    {t:'Foto zuschneiden',p:`Das Foto wird mittig auf 4:5 beschnitten${cutout?' und das Hauptmotiv automatisch freigestellt':''}. Das Motivfeld misst 360 × 450 mm, die Platte 420 × 510 mm.`},
-   {t:'Tonwerte trennen',p:'Das Bild wird geglättet und nach Helligkeit in vier Sprühebenen zerlegt, von hell nach dunkel. Die Grenzen folgen den eingestellten Flächenanteilen.'},
+   {t:'Tonwerte trennen',p:white?'Das Bild wird geglättet und nach Helligkeit in fünf Töne zerlegt: Weiß und vier Sprühebenen. Weiß hat keine eigene Schablone, es ist das Papier dort, wo alle vier Platten geschlossen sind. Die Grenzen folgen den eingestellten Flächenanteilen.':'Das Bild wird geglättet und nach Helligkeit in vier Sprühebenen zerlegt, von hell nach dunkel. Die Grenzen folgen den eingestellten Flächenanteilen.'},
    {t:'Stege setzen',p:stege},
    {t:'Schablonen schneiden',p:'Vier Platten aus 1 mm PETG, per Laser geschnitten. Die Kerben an der Oberkante zeigen die Nummer, das versetzte Passloch P4 verhindert falsches Auflegen.'},
    ...LAYERS.map((l,i)=>({t:`${l.name} sprühen`,k:i,p:[
-    `Platte auf die Passstifte legen und ganzflächig dünn sprühen. Gelb legt ${cutout?'die ganze Figur':'die hellen Flächen'} an.`,
+    `Platte auf die Passstifte legen und ganzflächig dünn sprühen. Gelb legt ${cutout?'die Figur':'die hellen Flächen'} an${white?', die hellsten Stellen bleiben weiß':''}.`,
     'Rosa zeichnet die Mitteltöne. Die Ebene liegt vollständig auf dem Gelb, damit bei Versatz keine Blitzer entstehen.',
     cutout?'Der Hintergrund entsteht allein durch diese Ebene. Dazu kommen die tiefen Schatten.':'Petrol legt die tiefen Schatten an.',
     'Die dunkelsten Stellen. Danach ist das Bild fertig.'][i]})),
-   {t:'Fertiges Bild',p:'Vier Ebenen auf Papier, mit dem kleinen Passungsversatz von Hand aufgelegter Platten. Mit dem Regler lässt sich das Bild mit dem Foto vergleichen.'}];
+   {t:'Fertiges Bild',p:(white?'Vier Farben auf weißem Papier, die hellsten Stellen bleiben unbesprüht,':'Vier Ebenen auf Papier,')+' mit dem kleinen Passungsversatz von Hand aufgelegter Platten. Mit dem Regler lässt sich das Bild mit dem Foto vergleichen.'}];
 }
 
 const $=id=>document.getElementById(id);
@@ -152,7 +153,7 @@ function maskFilled(mask,color){
   x.globalCompositeOperation='destination-in';x.drawImage(mask,MX,MY);return c;
 }
 function makePaper(){
-  const c=mk(),x=c.getContext('2d');x.fillStyle='#f6f1e8';x.fillRect(0,0,W,H);
+  const c=mk(),x=c.getContext('2d');x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
   const n=mk(W/4,H/4),nx=n.getContext('2d'),d=nx.createImageData(n.width,n.height);
   for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=10}
   nx.putImageData(d,0,0);x.imageSmoothingEnabled=true;x.drawImage(n,0,0,W,H);return c;
@@ -432,12 +433,12 @@ for(const el of [stage,$('ablage')]){
   el.addEventListener('dragleave',()=>$('ablage').classList.remove('ueber'));
   el.addEventListener('drop',e=>{e.preventDefault();$('ablage').classList.remove('ueber');if(!$('upload').hidden)pick(e.dataTransfer.files[0])});
 }
-for(const k of ['rose','petrol','black']){const f=()=>$('o-'+k).value=$(k).value+' %';$(k).oninput=f;f()}
+for(const k of ['white','rose','petrol','black']){const f=()=>$('o-'+k).value=$(k).value+' %';$(k).oninput=f;f()}
 $('upload').onsubmit=async e=>{
   e.preventDefault();if(!blob)return;
-  const cutout=$('frei').checked,f=new FormData;
+  const cutout=$('frei').checked,white=+$('white').value>0,f=new FormData;
   f.append('foto',blob,'foto.jpg');f.append('freistellen',cutout?'1':'0');
-  for(const k of ['rose','petrol','black'])f.append(k,$(k).value);
+  for(const k of ['white','rose','petrol','black'])f.append(k,$(k).value);
   $('los').disabled=true;status('');busy={p:0,text:'Hochladen …'};
   try{
     let r=await fetch('api/auftrag',{method:'POST',body:f}),j=await r.json();
@@ -456,7 +457,7 @@ $('upload').onsubmit=async e=>{
     const [pw,ph]=DATA.druck.platte;
     $('dl-info').textContent=`STL: vier Platten je ${String(pw).replace('.',',')} × ${String(ph).replace('.',',')} × 0,5 mm auf 250 × 250 mm, Maßstab ${String(Math.round(DATA.druck.massstab*1000)/10).replace('.',',')} %. Downloads bleiben 30 Minuten verfügbar.`;
     busy={p:1,text:'Simulation wird vorbereitet …'};
-    await start(cutout);
+    await start(cutout,white);
   }catch(err){status(err.message,true);$('los').disabled=false}
   busy=null;
 };
@@ -473,8 +474,8 @@ $('anderes').onclick=()=>{
 };
 
 let looping=false;
-async function start(cutout){
-  makeSteps(cutout);
+async function start(cutout,white){
+  makeSteps(cutout,white);
   const b=(s,m)=>`data:${m};base64,${s}`;
   const ms=await Promise.all(DATA.masks.map(s=>load(b(s,'image/png'))));
   [photo,gray]=await Promise.all([load(b(DATA.photo,'image/jpeg')),load(b(DATA.gray,'image/jpeg'))]);
