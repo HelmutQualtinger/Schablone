@@ -1,0 +1,14 @@
+services:
+  schablone:
+    build: .
+    image: schablone
+    container_name: schablone
+    restart: unless-stopped
+    mem_limit: 1g               # GrabCut und Vektorisierung auf Fotos bis 3000 px
+    networks:
+      - reverse-proxy           # NPM erreicht den Container per Name: schablone:8000, kein Host-Port
+
+networks:
+  reverse-proxy:
+    external: true
+    name: reverse-proxy

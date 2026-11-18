@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eigenes Spraybild</title>
+<title data-i18n="docTitle">Eigenes Spraybild</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Saira+Stencil+One&display=swap" rel="stylesheet">
@@ -16,8 +16,19 @@ body{background:var(--petrol);color:var(--papier);font:400 17px/1.45 Barlow,syst
 #buehne{min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
 canvas#stage{display:block;max-width:100%;max-height:100%;aspect-ratio:840/1020;height:100%;background:var(--papier)}
 canvas#stage.spruehen{cursor:crosshair;touch-action:none}
-aside{display:flex;flex-direction:column;min-height:0}
-h1{font:400 44px/1.02 "Saira Stencil One",Barlow,sans-serif;margin:0 0 4px;color:var(--gelb)}
+aside{display:flex;flex-direction:column;min-height:0;position:relative}
+.sprache{position:absolute;top:2px;right:0;z-index:5}
+.sprache>button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 8px;font:600 14px Barlow,sans-serif;
+  background:var(--petrol-tief);border:1px solid rgba(246,241,232,.45)}
+.sprache>button:hover{border-color:var(--gelb)}
+.sprache>button:focus-visible,.sprache li button:focus-visible{outline:2px solid var(--gelb);outline-offset:1px}
+.sprache ul{position:absolute;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;overflow:visible;flex:none;min-width:150px;
+  background:var(--petrol-tief);border:1px solid rgba(246,241,232,.45);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.sprache ul[hidden]{display:none}
+.sprache li button{grid-template-columns:30px 1fr;font-size:16px}
+.sprache li button[aria-selected=true]{color:var(--gelb);font-weight:600}
+.flagge{display:block;width:30px;height:20px;border:1px solid rgba(246,241,232,.5)}
+h1{padding-right:92px;font:400 44px/1.02 "Saira Stencil One",Barlow,sans-serif;margin:0 0 4px;color:var(--gelb)}
 .unter{margin:0 0 16px;font-size:16px}
 ol{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin}
 li button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;
@@ -67,25 +78,29 @@ fieldset output{float:right;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
-<main id="buehne"><canvas id="stage" width="840" height="1020" role="img" aria-label="Werkbank von oben mit Foto, Schablone und Spraybild"></canvas></main>
+<main id="buehne"><canvas id="stage" width="840" height="1020" role="img" aria-label="Werkbank von oben mit Foto, Schablone und Spraybild" data-i18n-aria="stageAria"></canvas></main>
 <aside>
-  <h1 id="titel">Eigenes Foto</h1>
-  <p class="unter">Vom Foto zum Vierfarb-Spraybild, 360 × 450 mm</p>
+  <div class="sprache" id="sprache">
+    <button type="button" id="sprache-knopf" aria-haspopup="listbox" aria-expanded="false" data-i18n-aria="langLabel"><span id="sprache-flagge"></span><span id="sprache-code"></span><span aria-hidden="true">▾</span></button>
+    <ul id="sprache-liste" role="listbox" hidden></ul>
+  </div>
+  <h1 id="titel" data-i18n="untitled">Eigenes Foto</h1>
+  <p class="unter" data-i18n="sub">Vom Foto zum Vierfarb-Spraybild, 360 × 450 mm</p>
   <form id="upload">
     <label class="datei" id="ablage">
       <input type="file" id="datei" accept="image/*">
-      <span id="dateiname">Foto wählen oder auf die Bühne ziehen</span>
+      <span id="dateiname" data-i18n="choose">Foto wählen oder auf die Bühne ziehen</span>
     </label>
-    <label class="wahl"><input type="checkbox" id="frei" checked> Hauptmotiv freistellen, Hintergrund petrol</label>
+    <label class="wahl"><input type="checkbox" id="frei" checked> <span data-i18n="cutout">Hauptmotiv freistellen, Hintergrund petrol</span></label>
     <fieldset>
-      <legend>Anteil der Figurfläche je Ebene</legend>
-      <label>Weiß, hellste Stellen ohne Farbe <output id="o-white"></output><input type="range" id="white" min="0" max="40" value="10"></label>
-      <label>Rosa <output id="o-rose"></output><input type="range" id="rose" min="20" max="80" value="50"></label>
-      <label>Petrol <output id="o-petrol"></output><input type="range" id="petrol" min="5" max="45" value="20"></label>
-      <label>Schwarz <output id="o-black"></output><input type="range" id="black" min="1" max="25" value="7"></label>
+      <legend data-i18n="legend">Anteil der Figurfläche je Ebene</legend>
+      <label><span data-i18n="white">Weiß, hellste Stellen ohne Farbe</span> <output id="o-white"></output><input type="range" id="white" min="0" max="40" value="10"></label>
+      <label><span data-i18n="rose">Rosa</span> <output id="o-rose"></output><input type="range" id="rose" min="20" max="80" value="50"></label>
+      <label><span data-i18n="petrol">Petrol</span> <output id="o-petrol"></output><input type="range" id="petrol" min="5" max="45" value="20"></label>
+      <label><span data-i18n="black">Schwarz</span> <output id="o-black"></output><input type="range" id="black" min="1" max="25" value="7"></label>
     </fieldset>
     <div class="leiste">
-      <button class="knopf haupt" id="los" disabled>Schablonen erzeugen</button>
+      <button class="knopf haupt" id="los" data-i18n="go" disabled>Schablonen erzeugen</button>
     </div>
     <p class="status" id="status" aria-live="polite"></p>
   </form>
@@ -93,46 +108,159 @@ fieldset output{float:right;font-variant-numeric:tabular-nums}
     <ol id="schritte"></ol>
     <div class="werte" id="werte" aria-live="polite"></div>
     <div class="leiste">
-      <button class="knopf haupt" id="play">Pause</button>
-      <button class="knopf" id="neu">Neu starten</button>
-      <button class="knopf" id="anderes">Anderes Foto</button>
-      <label class="wahl"><input type="checkbox" id="selbst"> Selbst sprühen</label>
+      <button class="knopf haupt" id="play" data-i18n="pause">Pause</button>
+      <button class="knopf" id="neu" data-i18n="restart">Neu starten</button>
+      <button class="knopf" id="anderes" data-i18n="other">Anderes Foto</button>
+      <label class="wahl"><input type="checkbox" id="selbst"> <span data-i18n="self">Selbst sprühen</span></label>
     </div>
     <div class="leiste">
-      <a class="knopf" id="dl-png" download>Vierfarbbild (PNG)</a>
-      <a class="knopf" id="dl-stl" download>Schablonen (STL)</a>
+      <a class="knopf" id="dl-png" data-i18n="dlPng" download>Vierfarbbild (PNG)</a>
+      <a class="knopf" id="dl-stl" data-i18n="dlStl" download>Schablonen (STL)</a>
     </div>
     <p class="quelle" id="dl-info"></p>
   </div>
-  <p class="quelle">Das Foto wird nur für die Berechnung an den Server geschickt und nicht gespeichert. Die Druckdateien bleiben 30 Minuten auf dem Server. Die Trennung ist automatisch, ohne Retusche.</p>
+  <p class="quelle" data-i18n="privacy">Das Foto wird nur für die Berechnung an den Server geschickt und nicht gespeichert. Die Druckdateien bleiben 30 Minuten auf dem Server. Die Trennung ist automatisch, ohne Retusche.</p>
 </aside>
 <script>
 let DATA;
+
+// ---- Sprachen ----
+const FLAGS={
+ de:'<svg class="flagge" viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="3" fill="#ffce00"/><rect width="5" height="2" fill="#dd0000"/><rect width="5" height="1" fill="#000"/></svg>',
+ en:'<svg class="flagge" viewBox="0 0 60 30" aria-hidden="true"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#c8102e" stroke-width="2.5"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#c8102e" stroke-width="6"/></svg>',
+ it:'<svg class="flagge" viewBox="0 0 3 2" aria-hidden="true"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#009246"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg>'};
+const LANGS=[['de','Deutsch'],['en','English'],['it','Italiano']];
+const I18N={
+de:{docTitle:'Eigenes Spraybild',stageAria:'Werkbank von oben mit Foto, Schablone und Spraybild',langLabel:'Sprache wählen',
+ untitled:'Eigenes Foto',sub:'Vom Foto zum Vierfarb-Spraybild, 360 × 450 mm',choose:'Foto wählen oder auf die Bühne ziehen',
+ cutout:'Hauptmotiv freistellen, Hintergrund petrol',legend:'Anteil der Figurfläche je Ebene',white:'Weiß, hellste Stellen ohne Farbe',rose:'Rosa',petrol:'Petrol',black:'Schwarz',
+ go:'Schablonen erzeugen',pause:'Pause',play:'Abspielen',restart:'Neu starten',other:'Anderes Foto',self:'Selbst sprühen',
+ dlPng:'Vierfarbbild (PNG)',dlStl:'Schablonen (STL)',
+ privacy:'Das Foto wird nur für die Berechnung an den Server geschickt und nicht gespeichert. Die Druckdateien bleiben 30 Minuten auf dem Server. Die Trennung ist automatisch, ohne Retusche.',
+ l0:'Sonnengelb',l1:'Korallrosa',l2:'Petrol',l3:'Tiefschwarz',near:'(nahe)',
+ bridges0:'Alle Platten hängen ohne Stege zusammen, kein Materialstück fällt beim Schneiden heraus.',
+ bridgesN:(list,sum,shown)=>`Material ohne Verbindung zum Rahmen fiele beim Schneiden heraus. Stege brauchen ${list}, insgesamt ${sum}. Gezeigt wird ${shown}. Die Stege liegen wo möglich unter der nächsten, dunkleren Ebene.`,
+ sCrop:'Foto zuschneiden',pCrop:c=>`Das Foto wird mittig auf 4:5 beschnitten${c?' und das Hauptmotiv automatisch freigestellt':''}. Das Motivfeld misst 360 × 450 mm, die Platte 420 × 510 mm.`,
+ sTone:'Tonwerte trennen',
+ pTone5:'Das Bild wird geglättet und nach Helligkeit in fünf Töne zerlegt: Weiß und vier Sprühebenen. Weiß hat keine eigene Schablone, es ist das Papier dort, wo alle vier Platten geschlossen sind. Die Grenzen folgen den eingestellten Flächenanteilen.',
+ pTone4:'Das Bild wird geglättet und nach Helligkeit in vier Sprühebenen zerlegt, von hell nach dunkel. Die Grenzen folgen den eingestellten Flächenanteilen.',
+ sBridges:'Stege setzen',sCut:'Schablonen schneiden',
+ pCut:'Vier Platten aus 1 mm PETG, per Laser geschnitten. Die Kerben an der Oberkante zeigen die Nummer, das versetzte Passloch P4 verhindert falsches Auflegen.',
+ sSpray:n=>`${n} sprühen`,
+ p1:(c,w)=>`Platte auf die Passstifte legen und ganzflächig dünn sprühen. Gelb legt ${c?'die Figur':'die hellen Flächen'} an${w?', die hellsten Stellen bleiben weiß':''}.`,
+ p2:'Rosa zeichnet die Mitteltöne. Die Ebene liegt vollständig auf dem Gelb, damit bei Versatz keine Blitzer entstehen.',
+ p3:c=>c?'Der Hintergrund entsteht allein durch diese Ebene. Dazu kommen die tiefen Schatten.':'Petrol legt die tiefen Schatten an.',
+ p4:'Die dunkelsten Stellen. Danach ist das Bild fertig.',
+ sFinal:'Fertiges Bild',pFinal:w=>(w?'Vier Farben auf weißem Papier, die hellsten Stellen bleiben unbesprüht,':'Vier Ebenen auf Papier,')+' mit dem kleinen Passungsversatz von Hand aufgelegter Platten. Mit dem Regler lässt sich das Bild mit dem Foto vergleichen.',
+ compare:'Vergleich mit dem Foto',
+ val:(ral,o,n)=>`${ral}, ${o} % Öffnung, ${n} ${n===1?'Steg':'Stege'}`,
+ dragHint:'Über die Platte ziehen. Deckung',coverage:'%',removePlate:'Platte abnehmen',dry:'5 min antrocknen lassen',
+ dropHere:'Foto hier ablegen',notImage:'Die Datei ist kein Bild.',reading:'Foto wird gelesen …',cantOpen:'Das Bild lässt sich im Browser nicht öffnen. JPEG oder PNG verwenden.',
+ uploading:'Hochladen …',uploadFail:'Hochladen fehlgeschlagen',calcFail:'Berechnung fehlgeschlagen',preparing:'Simulation wird vorbereitet …',
+ dlInfo:(w,h,sc)=>`STL: vier Platten je ${w} × ${h} × 0,5 mm auf 250 × 250 mm, Maßstab ${sc} %. Downloads bleiben 30 Minuten verfügbar.`,
+ dlGone:'Die Datei ist auf dem Server nicht mehr vorhanden (abgelaufen oder Server neu gestartet). Bitte „Anderes Foto“ wählen und das Foto neu berechnen lassen.',
+ noServer:'Der Server ist nicht erreichbar. Läuft web/app.py?'},
+en:{docTitle:'Your Own Spray Picture',stageAria:'Workbench seen from above with photo, stencil and spray picture',langLabel:'Choose language',
+ untitled:'Your photo',sub:'From photo to four-colour spray picture, 360 × 450 mm',choose:'Choose a photo or drag it onto the stage',
+ cutout:'Cut out the main subject, petrol background',legend:'Share of the figure area per layer',white:'White, lightest areas without paint',rose:'Pink',petrol:'Petrol',black:'Black',
+ go:'Create stencils',pause:'Pause',play:'Play',restart:'Restart',other:'Another photo',self:'Spray it yourself',
+ dlPng:'Four-colour image (PNG)',dlStl:'Stencils (STL)',
+ privacy:'The photo is sent to the server only for the calculation and is not stored. The print files stay on the server for 30 minutes. The separation is automatic, without retouching.',
+ l0:'Sunny yellow',l1:'Coral pink',l2:'Petrol',l3:'Deep black',near:'(approx.)',
+ bridges0:'All plates hold together without bridges, no piece of material falls out when cutting.',
+ bridgesN:(list,sum,shown)=>`Material without a connection to the frame would fall out when cutting. Bridges are needed for ${list}, ${sum} in total. Shown: ${shown}. Where possible the bridges lie under the next, darker layer.`,
+ sCrop:'Crop the photo',pCrop:c=>`The photo is cropped to 4:5 around the centre${c?' and the main subject is cut out automatically':''}. The picture area measures 360 × 450 mm, the plate 420 × 510 mm.`,
+ sTone:'Separate tones',
+ pTone5:'The image is smoothed and split by brightness into five tones: white and four spray layers. White has no stencil of its own, it is the paper where all four plates are closed. The boundaries follow the chosen area shares.',
+ pTone4:'The image is smoothed and split by brightness into four spray layers, from light to dark. The boundaries follow the chosen area shares.',
+ sBridges:'Add bridges',sCut:'Cut the stencils',
+ pCut:'Four plates of 1 mm PETG, laser cut. The notches on the top edge show the number, and the offset registration hole P4 prevents placing a plate the wrong way round.',
+ sSpray:n=>`Spray ${n}`,
+ p1:(c,w)=>`Place the plate on the registration pins and spray a thin coat over the whole surface. Yellow lays down ${c?'the figure':'the light areas'}${w?', the lightest spots stay white':''}.`,
+ p2:'Pink draws the mid-tones. This layer lies fully on top of the yellow, so no gaps appear if the plates are slightly misaligned.',
+ p3:c=>c?'The background comes from this layer alone, plus the deep shadows.':'Petrol lays down the deep shadows.',
+ p4:'The darkest areas. After that the picture is finished.',
+ sFinal:'Finished picture',pFinal:w=>(w?'Four colours on white paper, the lightest spots stay unsprayed,':'Four layers on paper,')+' with the slight misregistration of plates placed by hand. Use the slider to compare the picture with the photo.',
+ compare:'Compare with the photo',
+ val:(ral,o,n)=>`${ral}, ${o} % open, ${n} ${n===1?'bridge':'bridges'}`,
+ dragHint:'Drag across the plate. Coverage',coverage:'%',removePlate:'Lift plate',dry:'Let dry for 5 min',
+ dropHere:'Drop a photo here',notImage:'The file is not an image.',reading:'Reading photo …',cantOpen:'The browser cannot open this image. Use JPEG or PNG.',
+ uploading:'Uploading …',uploadFail:'Upload failed',calcFail:'Calculation failed',preparing:'Preparing the simulation …',
+ dlInfo:(w,h,sc)=>`STL: four plates of ${w} × ${h} × 0.5 mm on a 250 × 250 mm bed, scale ${sc} %. Downloads stay available for 30 minutes.`,
+ dlGone:'The file is no longer on the server (expired or server restarted). Please choose “Another photo” and have the photo calculated again.',
+ noServer:'The server cannot be reached. Is web/app.py running?'},
+it:{docTitle:'Immagine a spray personale',stageAria:'Banco di lavoro visto dall’alto con foto, stencil e immagine spray',langLabel:'Scegli la lingua',
+ untitled:'La tua foto',sub:'Dalla foto all’immagine spray a quattro colori, 360 × 450 mm',choose:'Scegli una foto o trascinala sul palco',
+ cutout:'Ritaglia il soggetto principale, sfondo petrolio',legend:'Quota dell’area della figura per livello',white:'Bianco, zone più chiare senza colore',rose:'Rosa',petrol:'Petrolio',black:'Nero',
+ go:'Crea gli stencil',pause:'Pausa',play:'Riproduci',restart:'Ricomincia',other:'Un’altra foto',self:'Spruzza tu stesso',
+ dlPng:'Immagine a quattro colori (PNG)',dlStl:'Stencil (STL)',
+ privacy:'La foto viene inviata al server solo per il calcolo e non viene salvata. I file di stampa restano sul server per 30 minuti. La separazione è automatica, senza ritocco.',
+ l0:'Giallo sole',l1:'Rosa corallo',l2:'Petrolio',l3:'Nero intenso',near:'(simile)',
+ bridges0:'Tutte le lastre restano unite senza ponticelli, nessun pezzo di materiale cade durante il taglio.',
+ bridgesN:(list,sum,shown)=>`Il materiale senza collegamento con la cornice cadrebbe durante il taglio. Servono ponticelli per ${list}, in tutto ${sum}. Mostrato: ${shown}. Dove possibile i ponticelli stanno sotto il livello successivo, più scuro.`,
+ sCrop:'Ritaglia la foto',pCrop:c=>`La foto viene ritagliata al centro in formato 4:5${c?' e il soggetto principale viene ritagliato automaticamente':''}. L’area del motivo misura 360 × 450 mm, la lastra 420 × 510 mm.`,
+ sTone:'Separa i toni',
+ pTone5:'L’immagine viene sfumata e suddivisa per luminosità in cinque toni: bianco e quattro livelli di spray. Il bianco non ha uno stencil proprio, è la carta dove tutte e quattro le lastre sono chiuse. I confini seguono le quote di area impostate.',
+ pTone4:'L’immagine viene sfumata e suddivisa per luminosità in quattro livelli di spray, dal chiaro allo scuro. I confini seguono le quote di area impostate.',
+ sBridges:'Aggiungi i ponticelli',sCut:'Taglia gli stencil',
+ pCut:'Quattro lastre in PETG da 1 mm, tagliate al laser. Le tacche sul bordo superiore indicano il numero, il foro di riferimento spostato P4 impedisce di posare la lastra al contrario.',
+ sSpray:n=>`Spruzza ${n}`,
+ p1:(c,w)=>`Posa la lastra sui perni di riferimento e spruzza un velo sottile su tutta la superficie. Il giallo stende ${c?'la figura':'le zone chiare'}${w?', i punti più chiari restano bianchi':''}.`,
+ p2:'Il rosa disegna i mezzitoni. Il livello poggia interamente sul giallo, così in caso di spostamento non restano fessure.',
+ p3:c=>c?'Lo sfondo nasce solo da questo livello, più le ombre profonde.':'Il petrolio stende le ombre profonde.',
+ p4:'Le zone più scure. Poi l’immagine è finita.',
+ sFinal:'Immagine finita',pFinal:w=>(w?'Quattro colori su carta bianca, i punti più chiari restano non spruzzati,':'Quattro livelli su carta,')+' con il leggero errore di registro di lastre posate a mano. Con il cursore puoi confrontare l’immagine con la foto.',
+ compare:'Confronto con la foto',
+ val:(ral,o,n)=>`${ral}, ${o} % di apertura, ${n} ${n===1?'ponticello':'ponticelli'}`,
+ dragHint:'Trascina sulla lastra. Copertura',coverage:'%',removePlate:'Togli la lastra',dry:'Lascia asciugare 5 min',
+ dropHere:'Rilascia qui la foto',notImage:'Il file non è un’immagine.',reading:'Lettura della foto …',cantOpen:'Il browser non riesce ad aprire l’immagine. Usa JPEG o PNG.',
+ uploading:'Caricamento …',uploadFail:'Caricamento non riuscito',calcFail:'Calcolo non riuscito',preparing:'Preparazione della simulazione …',
+ dlInfo:(w,h,sc)=>`STL: quattro lastre da ${w} × ${h} × 0,5 mm su un piano di 250 × 250 mm, scala ${sc} %. I download restano disponibili per 30 minuti.`,
+ dlGone:'Il file non è più sul server (scaduto o server riavviato). Scegli «Un’altra foto» e fai calcolare di nuovo la foto.',
+ noServer:'Il server non è raggiungibile. web/app.py è in esecuzione?'}
+};
+// Meldungen des Servers (deutsch) -> Schlüssel in den Texten
+const SRV={
+ en:{'Wartet auf freien Rechenplatz …':'Waiting for a free calculation slot …','Startet …':'Starting …','Tonwerte trennen …':'Separating tones …','Simulation und Druckdaten vorbereiten …':'Preparing simulation and print files …','Fertig':'Done',
+  'Kein Foto übertragen.':'No photo received.','Das Bild lässt sich nicht lesen. JPEG oder PNG verwenden.':'The image cannot be read. Use JPEG or PNG.','Das Foto ist zu klein, mindestens 200 Pixel Kantenlänge.':'The photo is too small, at least 200 pixels on each side.',
+  'Die Berechnung ist fehlgeschlagen. Ein anderes Foto oder andere Anteile versuchen.':'The calculation failed. Try another photo or other shares.','Auftrag unbekannt oder abgelaufen.':'Job unknown or expired.'},
+ it:{'Wartet auf freien Rechenplatz …':'In attesa di un posto di calcolo libero …','Startet …':'Avvio …','Tonwerte trennen …':'Separazione dei toni …','Simulation und Druckdaten vorbereiten …':'Preparazione di simulazione e file di stampa …','Fertig':'Fatto',
+  'Kein Foto übertragen.':'Nessuna foto ricevuta.','Das Bild lässt sich nicht lesen. JPEG oder PNG verwenden.':'Impossibile leggere l’immagine. Usa JPEG o PNG.','Das Foto ist zu klein, mindestens 200 Pixel Kantenlänge.':'La foto è troppo piccola, almeno 200 pixel per lato.',
+  'Die Berechnung ist fehlgeschlagen. Ein anderes Foto oder andere Anteile versuchen.':'Il calcolo non è riuscito. Prova un’altra foto o altre quote.','Auftrag unbekannt oder abgelaufen.':'Lavoro sconosciuto o scaduto.'}};
+const SRV_RE=[[/^Platte (\d) von 4: Stege und Konturen …$/,{en:m=>`Plate ${m[1]} of 4: bridges and contours …`,it:m=>`Lastra ${m[1]} di 4: ponticelli e contorni …`}],
+              [/^Das Foto ist größer als (\d+) MB\.$/,{en:m=>`The photo is larger than ${m[1]} MB.`,it:m=>`La foto supera ${m[1]} MB.`}]];
+function srv(msg){
+  if(LANG==='de'||!msg)return msg;
+  if(SRV[LANG][msg])return SRV[LANG][msg];
+  for(const [re,f] of SRV_RE){const m=re.exec(msg);if(m)return f[LANG](m)}
+  return msg;
+}
+let LANG='de';
+try{const v=localStorage.getItem('sprache');if(I18N[v])LANG=v;else{const b=(navigator.language||'de').slice(0,2);if(I18N[b])LANG=b}}catch(e){}
+const T=(k,...a)=>{const v=I18N[LANG][k]??I18N.de[k];return typeof v==='function'?v(...a):v};
+const num=n=>String(n).replace('.',LANG==='en'?'.':',');
 const W=840,H=1020,MX=60,MY=60,MW=720,MH=900;
 const LAYERS=[
- {id:'S1',name:'Sonnengelb',rgb:[245,203,38],ral:'RAL 1018 (nahe)',off:[0,0]},
- {id:'S2',name:'Korallrosa',rgb:[235,110,122],ral:'RAL 3014 (nahe)',off:[.25,-.15]},
- {id:'S3',name:'Petrol',rgb:[12,86,100],ral:'RAL 5020 (nahe)',off:[-.2,.2]},
- {id:'S4',name:'Tiefschwarz',rgb:[22,24,28],ral:'RAL 9005',off:[.15,.2]}];
+ {id:'S1',get name(){return T('l0')},rgb:[245,203,38],ral:'RAL 1018',off:[0,0]},
+ {id:'S2',get name(){return T('l1')},rgb:[235,110,122],ral:'RAL 3014',off:[.25,-.15]},
+ {id:'S3',get name(){return T('l2')},rgb:[12,86,100],ral:'RAL 5020',off:[-.2,.2]},
+ {id:'S4',get name(){return T('l3')},rgb:[22,24,28],ral:'RAL 9005',off:[.15,.2]}];
 const css=c=>`rgb(${c.rgb})`;
 const PINS=[[15,15],[405,15],[15,495],[380,495]];
 let STEPS=[];
+let CFG={cutout:true,white:true};
 function makeSteps(cutout,white){
-  LAYERS.forEach((l,i)=>{l.open=String(DATA.open[i]).replace('.',',');l.stege=DATA.bridges[i]});
+  CFG={cutout,white};
+  LAYERS.forEach((l,i)=>{l.stege=DATA.bridges[i];l.openPct=DATA.open[i]});
   const sum=DATA.bridges.reduce((a,b)=>a+b,0),mit=LAYERS.filter(l=>l.stege>0);
-  const stege=sum===0?'Alle Platten hängen ohne Stege zusammen, kein Materialstück fällt beim Schneiden heraus.'
-    :`Material ohne Verbindung zum Rahmen fiele beim Schneiden heraus. Stege brauchen ${mit.map(l=>`${l.name} (${l.stege})`).join(', ')}, insgesamt ${sum}. Gezeigt wird ${LAYERS[DATA.K].name}. Die Stege liegen wo möglich unter der nächsten, dunkleren Ebene.`;
+  const stege=sum===0?T('bridges0'):T('bridgesN',mit.map(l=>`${l.name} (${l.stege})`).join(', '),sum,LAYERS[DATA.K].name);
   STEPS=[
-   {t:'Foto zuschneiden',p:`Das Foto wird mittig auf 4:5 beschnitten${cutout?' und das Hauptmotiv automatisch freigestellt':''}. Das Motivfeld misst 360 × 450 mm, die Platte 420 × 510 mm.`},
-   {t:'Tonwerte trennen',p:white?'Das Bild wird geglättet und nach Helligkeit in fünf Töne zerlegt: Weiß und vier Sprühebenen. Weiß hat keine eigene Schablone, es ist das Papier dort, wo alle vier Platten geschlossen sind. Die Grenzen folgen den eingestellten Flächenanteilen.':'Das Bild wird geglättet und nach Helligkeit in vier Sprühebenen zerlegt, von hell nach dunkel. Die Grenzen folgen den eingestellten Flächenanteilen.'},
-   {t:'Stege setzen',p:stege},
-   {t:'Schablonen schneiden',p:'Vier Platten aus 1 mm PETG, per Laser geschnitten. Die Kerben an der Oberkante zeigen die Nummer, das versetzte Passloch P4 verhindert falsches Auflegen.'},
-   ...LAYERS.map((l,i)=>({t:`${l.name} sprühen`,k:i,p:[
-    `Platte auf die Passstifte legen und ganzflächig dünn sprühen. Gelb legt ${cutout?'die Figur':'die hellen Flächen'} an${white?', die hellsten Stellen bleiben weiß':''}.`,
-    'Rosa zeichnet die Mitteltöne. Die Ebene liegt vollständig auf dem Gelb, damit bei Versatz keine Blitzer entstehen.',
-    cutout?'Der Hintergrund entsteht allein durch diese Ebene. Dazu kommen die tiefen Schatten.':'Petrol legt die tiefen Schatten an.',
-    'Die dunkelsten Stellen. Danach ist das Bild fertig.'][i]})),
-   {t:'Fertiges Bild',p:(white?'Vier Farben auf weißem Papier, die hellsten Stellen bleiben unbesprüht,':'Vier Ebenen auf Papier,')+' mit dem kleinen Passungsversatz von Hand aufgelegter Platten. Mit dem Regler lässt sich das Bild mit dem Foto vergleichen.'}];
+   {t:T('sCrop'),p:T('pCrop',cutout)},
+   {t:T('sTone'),p:T(white?'pTone5':'pTone4')},
+   {t:T('sBridges'),p:stege},
+   {t:T('sCut'),p:T('pCut')},
+   ...LAYERS.map((l,i)=>({t:T('sSpray',l.name),k:i,p:[T('p1',cutout,white),T('p2'),T('p3',cutout),T('p4')][i]})),
+   {t:T('sFinal'),p:T('pFinal',white)}];
 }
 
 const $=id=>document.getElementById(id);
@@ -346,17 +474,17 @@ function go(n){
 }
 function showValues(){
   const v=$('werte'),s=STEPS[step],k=s.k;
-  if(step===8){if(!$('vergleich'))v.innerHTML='<label>Vergleich mit dem Foto<input type="range" id="vergleich" min="0" max="100" value="100"></label>';return}
+  if(step===8){if(!$('vergleich'))v.innerHTML=`<label><span data-i18n="compare">${T('compare')}</span><input type="range" id="vergleich" min="0" max="100" value="100"></label>`;return}
   if(k===undefined){v.textContent='';return}
   const l=LAYERS[k],c=scene===S.spray?scene:{};
-  const text=`${l.ral}, ${l.open} % Öffnung, ${l.stege} ${l.stege===1?'Steg':'Stege'}`;
+  const text=T('val',`${l.ral} ${T('near')}`,num(l.openPct),l.stege);
   if(self&&c.phase==='sprühen'){
     if(!$('deckung')){
-      v.innerHTML='Über die Platte ziehen. Deckung <span id="deckung"></span> % <button class="knopf" id="abnehmen">Platte abnehmen</button>';
+      v.innerHTML=`${T('dragHint')} <span id="deckung"></span> % <button class="knopf" id="abnehmen">${T('removePlate')}</button>`;
       $('abnehmen').onclick=()=>scene.finish();
     }
     $('deckung').textContent=c.cover;
-  }else v.textContent=c.phase==='trocknen'?'5 min antrocknen lassen':text;
+  }else v.textContent=c.phase==='trocknen'?T('dry'):text;
 }
 let lastT=0;
 function frame(now){
@@ -370,7 +498,7 @@ function frame(now){
   }
   scene.draw();requestAnimationFrame(frame);
 }
-function setPlay(p){playing=p;$('play').textContent=p?'Pause':'Abspielen'}
+function setPlay(p){playing=p;$('play').textContent=T(p?'pause':'play')}
 
 // ---- Bedienung ----
 function pos(e){const r=stage.getBoundingClientRect();return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
@@ -384,14 +512,14 @@ function reset(){sprayed.fill(null);$('werte').textContent='';setPlay(true);go(0
 $('neu').onclick=reset;
 $('selbst').onchange=e=>{self=e.target.checked;stage.classList.toggle('spruehen',STEPS[step].k!==undefined&&self);showValues()};
 addEventListener('keydown',e=>{
-  if(!scene||e.target.closest('input,button')&&e.key===' ')return;
+  if(!scene||e.target.closest('#sprache')||e.target.closest('input,button')&&e.key===' ')return;
   if(e.key===' '){e.preventDefault();$('play').click()}
   if(e.key==='ArrowRight'&&step<8)go(step+1);
   if(e.key==='ArrowLeft'&&step>0)go(step-1);
 });
 
 // ---- Upload und Berechnung ----
-let preview=null,blob=null,busy=null;
+let preview=null,blob=null,busy=null,fileName='',title='';
 function drawWaiting(){
   if(!paper)paper=makePaper();
   X.drawImage(paper,0,0);
@@ -402,30 +530,33 @@ function drawWaiting(){
     X.drawImage(preview,sx,sy,sw,sh,MX,MY,MW,MH);
   }else{
     X.strokeStyle=css(LAYERS[2]);X.lineWidth=2;X.setLineDash([12,8]);X.strokeRect(MX,MY,MW,MH);X.setLineDash([]);
-    X.fillStyle=css(LAYERS[2]);X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText('Foto hier ablegen',W/2,H/2);
+    X.fillStyle=css(LAYERS[2]);X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText(T('dropHere'),W/2,H/2);
   }
   if(busy){
     X.fillStyle='rgba(12,86,100,.78)';X.fillRect(MX,MY,MW,MH);
     const p=busy.p,y=H/2;X.fillStyle='rgba(246,241,232,.3)';X.fillRect(MX+80,y+20,MW-160,8);
     X.fillStyle=css(LAYERS[0]);X.fillRect(MX+80,y+20,(MW-160)*p,8);
-    X.fillStyle='#f6f1e8';X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText(busy.text,W/2,y);
+    X.fillStyle='#f6f1e8';X.font='500 30px Barlow,sans-serif';X.textAlign='center';X.fillText(busy.f(),W/2,y);
   }
 }
 function waitLoop(){if(!scene){drawWaiting();requestAnimationFrame(waitLoop)}}
-function status(text,err=false){const s=$('status');s.textContent=text;s.classList.toggle('fehler',err)}
+let statusFn=null,statusErr=false,infoFn=null;
+function status(text,err=false){statusFn=text?(typeof text==='function'?text:()=>text):null;statusErr=err;showStatus()}
+function showStatus(){const s=$('status');s.textContent=statusFn?statusFn():'';s.classList.toggle('fehler',statusErr)}
+function info(f){infoFn=f;$('dl-info').textContent=f?f():''}
 async function pick(file){
   if(!file)return;
-  if(!file.type.startsWith('image/')){status('Die Datei ist kein Bild.',true);return}
-  status('Foto wird gelesen …');
+  if(!file.type.startsWith('image/')){status(()=>T('notImage'),true);return}
+  status(()=>T('reading'));
   try{
     const img=await load(URL.createObjectURL(file));
     const s=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));
     const c=mk(Math.round(img.naturalWidth*s),Math.round(img.naturalHeight*s));
     c.getContext('2d').drawImage(img,0,0,c.width,c.height);
     preview=c;blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
-    $('dateiname').textContent=file.name;$('los').disabled=false;status('');
-    $('titel').textContent=file.name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim()||'Eigenes Foto';
-  }catch(e){status('Das Bild lässt sich im Browser nicht öffnen. JPEG oder PNG verwenden.',true)}
+    fileName=file.name;$('dateiname').textContent=fileName;$('los').disabled=false;status('');
+    title=fileName.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();$('titel').textContent=title||T('untitled');
+  }catch(e){status(()=>T('cantOpen'),true)}
 }
 $('datei').onchange=e=>pick(e.target.files[0]);
 for(const el of [stage,$('ablage')]){
@@ -433,32 +564,32 @@ for(const el of [stage,$('ablage')]){
   el.addEventListener('dragleave',()=>$('ablage').classList.remove('ueber'));
   el.addEventListener('drop',e=>{e.preventDefault();$('ablage').classList.remove('ueber');if(!$('upload').hidden)pick(e.dataTransfer.files[0])});
 }
-for(const k of ['white','rose','petrol','black']){const f=()=>$('o-'+k).value=$(k).value+' %';$(k).oninput=f;f()}
+for(const k of ['white','rose','petrol','black']){const f=()=>$('o-'+k).value=num($(k).value)+' %';$(k).oninput=f;f()}
 $('upload').onsubmit=async e=>{
   e.preventDefault();if(!blob)return;
   const cutout=$('frei').checked,white=+$('white').value>0,f=new FormData;
   f.append('foto',blob,'foto.jpg');f.append('freistellen',cutout?'1':'0');
   for(const k of ['white','rose','petrol','black'])f.append(k,$(k).value);
-  $('los').disabled=true;status('');busy={p:0,text:'Hochladen …'};
+  $('los').disabled=true;status('');busy={p:0,f:()=>T('uploading')};
   try{
     let r=await fetch('api/auftrag',{method:'POST',body:f}),j=await r.json();
-    if(!r.ok)throw new Error(j.fehler||'Hochladen fehlgeschlagen');
+    if(!r.ok)throw new Error(j.fehler||T('uploadFail'));
     const id=j.id;
     for(;;){
       await new Promise(r=>setTimeout(r,700));
       r=await fetch('api/auftrag/'+id);j=await r.json();
-      if(!r.ok||j.fehler)throw new Error(j.fehler||'Berechnung fehlgeschlagen');
-      busy={p:j.anteil,text:j.schritt};
+      if(!r.ok||j.fehler)throw new Error(j.fehler||T('calcFail'));
+      {const m=j.schritt;busy={p:j.anteil,f:()=>srv(m)}}
       if(j.data){DATA=j.data;break}
     }
-    const name=$('titel').textContent.trim().replace(/[^\p{L}\p{N}]+/gu,'_')||'motiv';
+    const name=($('titel').textContent||'').trim().replace(/[^\p{L}\p{N}]+/gu,'_')||'motiv';
     $('dl-png').href=`api/auftrag/${id}/png`;$('dl-png').download=`${name}_vierfarbbild.png`;
     $('dl-stl').href=`api/auftrag/${id}/stl`;$('dl-stl').download=`${name}_schablonen_250mm.stl`;
     const [pw,ph]=DATA.druck.platte;
-    $('dl-info').textContent=`STL: vier Platten je ${String(pw).replace('.',',')} × ${String(ph).replace('.',',')} × 0,5 mm auf 250 × 250 mm, Maßstab ${String(Math.round(DATA.druck.massstab*1000)/10).replace('.',',')} %. Downloads bleiben 30 Minuten verfügbar.`;
-    busy={p:1,text:'Simulation wird vorbereitet …'};
+    info(()=>T('dlInfo',num(pw),num(ph),num(Math.round(DATA.druck.massstab*1000)/10)));
+    busy={p:1,f:()=>T('preparing')};
     await start(cutout,white);
-  }catch(err){status(err.message,true);$('los').disabled=false}
+  }catch(err){const m=err.message;status(()=>srv(m),true);$('los').disabled=false}
   busy=null;
 };
 for(const id of ['dl-png','dl-stl'])$(id).addEventListener('click',async e=>{
@@ -466,7 +597,7 @@ for(const id of ['dl-png','dl-stl'])$(id).addEventListener('click',async e=>{
   e.preventDefault();
   const r=await fetch(a.href,{method:'HEAD'}).catch(()=>null);
   if(r&&r.ok){a.dataset.ok='1';a.click();delete a.dataset.ok}
-  else $('dl-info').textContent=r?'Die Datei ist auf dem Server nicht mehr vorhanden (abgelaufen oder Server neu gestartet). Bitte „Anderes Foto“ wählen und das Foto neu berechnen lassen.':'Der Server ist nicht erreichbar. Läuft web/app.py?';
+  else info(()=>T(r?'dlGone':'noServer'));
 });
 $('anderes').onclick=()=>{
   scene=null;sprayed.fill(null);$('ablauf').hidden=true;$('upload').hidden=false;$('los').disabled=!blob;$('werte').textContent='';
@@ -488,16 +619,62 @@ async function start(cutout,white){
     x.globalCompositeOperation='destination-out';x.drawImage(masks[k],MX,MY);
     x.globalCompositeOperation='source-over';x.strokeStyle='rgba(22,24,28,.8)';x.lineWidth=1.5;for(const r of rings[k])x.stroke(ringPath(r));
     return c});
-  $('schritte').innerHTML=STEPS.map((s,i)=>{
-    const n=s.k!==undefined?s.k+1:0;
-    const mark=n?`<span class="platte" style="--c:${css(LAYERS[s.k])};--n:${s.k<2?'#16181c':'#f6f1e8'}">${'<i></i>'.repeat(n)}</span>`:`<span class="nr">${i+1}</span>`;
-    return `<li><button>${mark}<span>${s.t}</span></button><p>${s.p}</p></li>`}).join('');
+  renderSteps();
   document.querySelectorAll('#schritte button').forEach((c,i)=>c.onclick=()=>{if(i===8)$('werte').textContent='';go(i)});
   $('upload').hidden=true;$('ablauf').hidden=false;
   sprayed.fill(null);setPlay(!matchMedia('(prefers-reduced-motion: reduce)').matches);
   go(0);
   if(!looping){looping=true;requestAnimationFrame(n=>{lastT=n;frame(n)})}
 }
+function renderSteps(){
+  $('schritte').innerHTML=STEPS.map((s,i)=>{
+    const n=s.k!==undefined?s.k+1:0;
+    const mark=n?`<span class="platte" style="--c:${css(LAYERS[s.k])};--n:${s.k<2?'#16181c':'#f6f1e8'}">${'<i></i>'.repeat(n)}</span>`:`<span class="nr">${i+1}</span>`;
+    return `<li><button>${mark}<span>${s.t}</span></button><p>${s.p}</p></li>`}).join('');
+  document.querySelectorAll('#schritte li').forEach((l,i)=>{l.classList.toggle('an',i===step);l.querySelector('button').setAttribute('aria-current',i===step?'step':'false')});
+  document.querySelectorAll('#schritte button').forEach((c,i)=>c.onclick=()=>{if(i===8)$('werte').textContent='';go(i)});
+}
+
+// ---- Sprachwahl ----
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=T('docTitle');
+  document.querySelectorAll('[data-i18n]').forEach(e=>{
+    if(e.id==='dateiname'&&fileName)return;
+    if(e.id==='titel'&&title)return;
+    e.textContent=T(e.dataset.i18n)});
+  document.querySelectorAll('[data-i18n-aria]').forEach(e=>e.setAttribute('aria-label',T(e.dataset.i18nAria)));
+  for(const k of ['white','rose','petrol','black'])$('o-'+k).value=num($(k).value)+' %';
+  $('sprache-flagge').innerHTML=FLAGS[LANG];$('sprache-code').textContent=LANG.toUpperCase();
+  document.querySelectorAll('#sprache-liste button').forEach(b=>b.setAttribute('aria-selected',b.dataset.l===LANG));
+  setPlay(playing);
+  showStatus();if(infoFn)info(infoFn);
+  if(DATA){
+    makeSteps(CFG.cutout,CFG.white);renderSteps();
+    const v=$('vergleich');if(v)v.parentNode.firstChild.textContent=T('compare');
+    showValues();
+  }
+}
+function setLang(l){
+  LANG=l;try{localStorage.setItem('sprache',l)}catch(e){}
+  applyLang();
+}
+{
+  const knopf=$('sprache-knopf'),liste=$('sprache-liste');
+  liste.innerHTML=LANGS.map(([c,n])=>`<li role="presentation"><button type="button" role="option" data-l="${c}" aria-selected="false">${FLAGS[c]}<span>${n}</span></button></li>`).join('');
+  const close=(fokus)=>{liste.hidden=true;knopf.setAttribute('aria-expanded','false');if(fokus)knopf.focus()};
+  knopf.onclick=()=>{const open=liste.hidden;liste.hidden=!open;knopf.setAttribute('aria-expanded',String(open));
+    if(open)(liste.querySelector('[aria-selected=true]')||liste.querySelector('button')).focus()};
+  liste.onclick=e=>{const b=e.target.closest('button');if(b){setLang(b.dataset.l);close(true)}};
+  addEventListener('click',e=>{if(!liste.hidden&&!$('sprache').contains(e.target))close(false)});
+  $('sprache').addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!liste.hidden){e.stopPropagation();close(true)}
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&!liste.hidden){e.preventDefault();
+      const bs=[...liste.querySelectorAll('button')],i=bs.indexOf(document.activeElement);
+      bs[(i+(e.key==='ArrowDown'?1:-1)+bs.length)%bs.length].focus()}
+  });
+}
+applyLang();
 waitLoop();
 </script>
 </body>
