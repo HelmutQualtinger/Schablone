@@ -74,9 +74,9 @@ def index():
     return send_from_directory(os.path.join(ROOT, "web", "static"), "index.html")
 
 
-@app.get("/og.png")
+@app.get("/og.jpg")
 def og_image():
-    return send_from_directory(os.path.join(ROOT, "web", "static"), "og.png", max_age=3600)
+    return send_from_directory(os.path.join(ROOT, "web", "static"), "og.jpg", max_age=3600)
 
 
 @app.post("/api/auftrag")
